@@ -55,7 +55,7 @@ export default function App() {
         ref={board}
         tabIndex={0}
         aria-label="Programok napok szerint"
-        className="relative min-h-0 flex-1 snap-x snap-mandatory scroll-pl-9 overflow-auto bg-frame"
+        className="relative min-h-0 flex-1 snap-x snap-mandatory scroll-pl-9 overflow-auto bg-frame sm:snap-none"
       >
         <div className="flex min-h-full w-max gap-1 pr-1">
           {[...months].map(([month, monthDays], i) => (
