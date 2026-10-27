@@ -1,54 +1,42 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Archivo", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-sans: "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
 
-  --color-ink: #000000;
-  --color-paper: #ffffff;
-  --color-dim: #9a9a9a;
-  --color-rule: #4a4a4a;
+  --color-cell: #1e1e1e;
+  --color-paper: #b5b3ad;
+  --color-muted: #8f8d89;
+  --color-frame: #111111;
+  --color-raised: #2a2a2a;
 
-  --color-buli: #f7a8d8;
-  --color-koncert: #ffe98a;
-  --color-komolyzene: #cdb8ff;
-  --color-szinpad: #a8d8ff;
-  --color-gyerek: #b8f2a6;
-  --color-egyeb: #ffc6a8;
-}
+  --spacing-tile: 8rem;
 
-@utility stretch-wide {
-  font-stretch: 125%;
-}
+  --animate-marquee: marquee linear both;
 
-@utility stretch-narrow {
-  font-stretch: 80%;
-}
-
-@utility barcode {
-  background: repeating-linear-gradient(
-    90deg,
-    currentColor 0 2px,
-    transparent 2px 4px,
-    currentColor 4px 5px,
-    transparent 5px 8px,
-    currentColor 8px 11px,
-    transparent 11px 12px,
-    currentColor 12px 13px,
-    transparent 13px 17px
-  );
+  @keyframes marquee {
+    to {
+      transform: translateX(var(--shift));
+    }
+  }
 }
 
 @layer base {
   html {
     color-scheme: dark;
-    background: var(--color-ink);
+    background: var(--color-cell);
     color: var(--color-paper);
     font-feature-settings: "tnum";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button:not(:disabled),
+  [role="option"] {
+    cursor: pointer;
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-paper);
+    outline: 1px solid var(--color-paper);
     outline-offset: 2px;
   }
 }

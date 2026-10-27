@@ -1,96 +1,81 @@
-import { useMemo, useRef, useState } from 'react'
+import { Fragment, useMemo, useRef, useState } from 'react'
 import { DayColumn } from '@/components/DayColumn'
-import { KindFilter } from '@/components/KindFilter'
-import { KINDS, dayKey, dayRange, events, type Kind } from '@/lib/events'
+import { FilterMenu, VenueSelect } from '@/components/FilterMenu'
+import { KindSelect } from '@/components/KindTag'
+import { MonthColumn } from '@/components/MonthColumn'
+import { ProfileMenu } from '@/components/ProfileMenu'
+import { dayKey, dayRange, events, type Kind } from '@/lib/events'
+import { useSaved } from '@/lib/saved'
 
-const venueCount = new Set(events.map((e) => e.venue)).size
+const GAP = 4
+
+const venues = [...new Set(events.map((e) => e.venue))].sort((a, b) => a.localeCompare(b, 'hu'))
 
 export default function App() {
-  const [active, setActive] = useState<Set<Kind>>(() => new Set(KINDS.map((k) => k.id)))
-  const board = useRef<HTMLDivElement>(null)
-  const now = useMemo(() => new Date(), [])
+  const [kind, setKind] = useState<Kind | null>(null)
+  const [venue, setVenue] = useState<string | null>(null)
+  const board = useRef<HTMLElement>(null)
+  const [now] = useState(() => new Date())
   const today = dayKey(now)
 
   const days = useMemo(() => {
-    const visible = events.filter((e) => active.has(e.kind) && (e.end ?? e.start) >= now)
+    const visible = events.filter(
+      (e) => (!kind || e.kind === kind) && (!venue || e.venue === venue) && (e.end ?? e.start) >= now,
+    )
     const byDay = Map.groupBy(visible, (e) => (e.start < now ? today : dayKey(e.start)))
     return dayRange(now, events[events.length - 1].start).map((key) => ({ key, events: byDay.get(key) ?? [] }))
-  }, [active, now, today])
+  }, [kind, venue, now, today])
 
-  const toggle = (kind: Kind) =>
-    setActive((prev) => {
-      const next = new Set(prev)
-      if (next.has(kind)) next.delete(kind)
-      else next.add(kind)
-      return next
-    })
+  const [saved, toggleSaved] = useSaved()
+  const savedEvents = useMemo(() => events.filter((e) => saved.has(e.id) && (e.end ?? e.start) >= now), [saved, now])
 
-  const step = (dir: 1 | -1) => {
-    const el = board.current
-    const col = el?.querySelector('section')
-    if (el && col) el.scrollBy({ left: dir * col.offsetWidth })
+  const months = useMemo(() => Map.groupBy(days, (d) => d.key.slice(0, 7)), [days])
+
+  const toggleKind = (k: Kind) => setKind((prev) => (prev === k ? null : k))
+
+  const goToMonth = (month: string) => {
+    const first = board.current?.querySelector<HTMLElement>(`[data-day^="${month}"]`)
+    const strip = first?.previousElementSibling as HTMLElement | null
+    if (first) board.current?.scrollTo({ left: first.offsetLeft - (strip?.offsetWidth ?? 0) - GAP })
   }
 
   return (
     <div className="flex h-dvh flex-col">
-      <svg aria-hidden className="absolute size-0">
-        <filter id="xerox">
-          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="7" />
-          <feDisplacementMap in="SourceGraphic" scale="4" />
-        </filter>
-      </svg>
-      <header className="border-b border-paper px-3 pt-3 pb-3 sm:px-4">
-        <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-          <h1 className="stretch-wide text-[clamp(2.5rem,8vw,5.5rem)] leading-[0.85] font-black tracking-tight [filter:url(#xerox)]">
-            Jobb elöl
-          </h1>
-          <p className="pb-1 font-mono text-xs leading-relaxed text-dim sm:text-right">
-            Budapest, {venueCount} helyszín
-            <br />
-            klubok, koncertek, színpadok
-          </p>
+      <header className="relative z-40 flex items-center gap-2 bg-frame px-4 py-2">
+        <h1 className="shrink-0 text-base leading-none font-medium tracking-tight sm:mr-4">Jobb elöl</h1>
+        <KindSelect kind={kind} onKind={setKind} className="ml-auto hidden w-48 xl:block" />
+        <VenueSelect venue={venue} venues={venues} onVenue={setVenue} className="hidden w-48 xl:block" />
+        <div className="ml-auto xl:ml-0">
+          <FilterMenu kind={kind} venue={venue} venues={venues} onKind={setKind} onVenue={setVenue} />
         </div>
-        <div className="mt-4 flex items-center gap-3">
-          <div className="min-w-0 flex-1">
-            <KindFilter active={active} onToggle={toggle} />
-          </div>
-          <nav aria-label="Napok léptetése" className="flex shrink-0 gap-1">
-            <button
-              type="button"
-              onClick={() => board.current?.scrollTo({ left: 0 })}
-              className="min-h-10 border border-paper px-3 font-mono text-sm font-semibold hover:bg-paper hover:text-ink"
-            >
-              Ma
-            </button>
-            <button
-              type="button"
-              aria-label="Előző nap"
-              onClick={() => step(-1)}
-              className="hidden min-h-10 min-w-10 border border-paper text-lg font-bold hover:bg-paper hover:text-ink sm:block"
-            >
-              ←
-            </button>
-            <button
-              type="button"
-              aria-label="Következő nap"
-              onClick={() => step(1)}
-              className="hidden min-h-10 min-w-10 border border-paper text-lg font-bold hover:bg-paper hover:text-ink sm:block"
-            >
-              →
-            </button>
-          </nav>
-        </div>
+        <ProfileMenu saved={savedEvents} onRemove={toggleSaved} />
       </header>
 
       <main
         ref={board}
         tabIndex={0}
         aria-label="Programok napok szerint"
-        className="flex min-h-0 flex-1 snap-x snap-mandatory overflow-auto motion-safe:scroll-smooth"
+        className="relative min-h-0 flex-1 snap-x snap-mandatory scroll-pl-9 overflow-auto bg-frame"
       >
-        {days.map((d) => (
-          <DayColumn key={d.key} dayKey={d.key} events={d.events} isToday={d.key === today} now={now} />
-        ))}
+        <div className="flex min-h-full w-max gap-1 pr-1">
+          {[...months].map(([month, monthDays], i) => (
+            <Fragment key={month}>
+              <MonthColumn monthKey={month} fromRight={months.size - 1 - i} onSelect={() => goToMonth(month)} />
+              {monthDays.map((d) => (
+                <DayColumn
+                  key={d.key}
+                  dayKey={d.key}
+                  events={d.events}
+                  isToday={d.key === today}
+                  now={now}
+                  saved={saved}
+                  onKind={toggleKind}
+                  onSave={toggleSaved}
+                />
+              ))}
+            </Fragment>
+          ))}
+        </div>
       </main>
     </div>
   )

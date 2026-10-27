@@ -1,45 +1,34 @@
-import { describeDay, type CalendarEvent } from '@/lib/events'
-import { EventRow } from './EventRow'
+import { describeDay, type CalendarEvent, type Kind } from '@/lib/events'
+import { EventTile } from './EventTile'
 
-type Props = { dayKey: string; events: CalendarEvent[]; isToday: boolean; now: Date }
+type Props = {
+  dayKey: string
+  events: CalendarEvent[]
+  isToday: boolean
+  now: Date
+  saved: Set<string>
+  onKind: (kind: Kind) => void
+  onSave: (id: string) => void
+}
 
-export function DayColumn({ dayKey, events, isToday, now }: Props) {
+export function DayColumn({ dayKey, events, isToday, now, saved, onKind, onSave }: Props) {
   const { day, weekday, month } = describeDay(dayKey)
 
   return (
     <section
+      data-day={dayKey}
       aria-label={`${month} ${day}., ${weekday}`}
-      className="flex w-[86vw] shrink-0 snap-start flex-col border-r border-dotted border-rule sm:w-[50vw] md:w-[34vw] lg:w-72"
+      className="flex w-[calc(100vw-72px)] shrink-0 snap-start flex-col gap-1 pb-1 sm:w-[45vw] md:w-[30vw] lg:w-64"
     >
-      <header className={`sticky top-0 z-10 px-3 pt-2 ${isToday ? 'bg-paper text-ink' : 'bg-ink'}`}>
-        <div className="flex items-start justify-between gap-2">
-          <span className="stretch-wide text-7xl leading-[0.9] font-black tracking-tight">{day}</span>
-          {isToday && <span className="pt-1 font-mono text-xs font-semibold tracking-[0.3em] uppercase">ma</span>}
-        </div>
-        <div className="mt-1 flex justify-between font-mono text-xs font-semibold tracking-[0.3em] uppercase">
-          <span>{weekday}</span>
-          <span>{month}</span>
-        </div>
-        <div aria-hidden className="mt-2 overflow-hidden pb-1 font-mono text-xs leading-none whitespace-nowrap">
-          {'*'.repeat(80)}
-        </div>
+      <header className="sticky top-0 z-20 flex items-baseline gap-2 bg-frame px-4 py-2">
+        <span className="text-2xl leading-none font-light tracking-tight">{day}</span>
+        <span className="font-mono text-[11px] text-muted">{weekday}</span>
+        {isToday && <span className="ml-auto font-mono text-[11px] text-paper">ma</span>}
       </header>
 
-      <div className="flex-1">
-        {events.length ? (
-          events.map((e) => <EventRow key={e.id} event={e} now={now} />)
-        ) : (
-          <p className="px-3 py-4 font-mono text-xs text-dim">Erre a napra nincs program a kiválasztott típusokból.</p>
-        )}
-      </div>
-
-      <footer className="px-3 pt-3 pb-5 font-mono text-xs">
-        <div className="flex justify-between border-t border-dashed border-dim pt-2 font-semibold uppercase">
-          <span className="tracking-[0.3em]">összesen</span>
-          <span>{events.length}</span>
-        </div>
-        <div aria-hidden className="barcode mt-3 h-8 text-paper/80" />
-      </footer>
+      {events.map((e) => (
+        <EventTile key={e.id} event={e} now={now} saved={saved.has(e.id)} onKind={onKind} onSave={onSave} />
+      ))}
     </section>
   )
 }

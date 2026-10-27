@@ -1,12 +1,12 @@
 import clubs from '@/data/clubs.snapshot.json'
 
 export const KINDS = [
-  { id: 'buli', label: 'Buli', swatch: 'bg-buli' },
-  { id: 'koncert', label: 'Koncert', swatch: 'bg-koncert' },
-  { id: 'komolyzene', label: 'Komolyzene', swatch: 'bg-komolyzene' },
-  { id: 'szinpad', label: 'Színpad', swatch: 'bg-szinpad' },
-  { id: 'gyerek', label: 'Gyerek', swatch: 'bg-gyerek' },
-  { id: 'egyeb', label: 'Egyéb', swatch: 'bg-egyeb' },
+  { id: 'buli', label: 'Buli' },
+  { id: 'koncert', label: 'Koncert' },
+  { id: 'komolyzene', label: 'Komolyzene' },
+  { id: 'szinpad', label: 'Színpad' },
+  { id: 'gyerek', label: 'Gyerek' },
+  { id: 'egyeb', label: 'Egyéb' },
 ] as const
 
 export type Kind = (typeof KINDS)[number]['id']
@@ -25,7 +25,7 @@ export type CalendarEvent = {
 const TZ = 'Europe/Budapest'
 
 const KID = /ringató|baba|tesz-vesz|óvoda|gyerek|család|mikulás|mese|kőketánc|babazuri/i
-const PARTY = /party|\bdj\b|b2b|techno|house|disco|diszkó|rave|all night|\bw\/|drum|bass|jungle|club night|hardtek|hardcore|uptempo/i
+const PARTY = /\b(party|dj|b2b|techno|house|disco|rave|drum|bass|jungle|hardtek|hardcore|uptempo)\b|diszkó|all night|club night|\bw\//i
 const OTHER = /filmklub|vetítés|tárlat|kiállítás|vezetés|kvíz|workshop|beszélget|könyvbemutató|irodalom/i
 const CLASSICAL = /opera|zenekar|kórus|filharmon|szimfoni|hangverseny|kamarazen|zongoraest|requiem|oratórium|puccini|brahms|liszt|mozart|bach|beethoven|sosztakovics|saint-saëns|vivaldi|händel|haydn|schubert|verdi|wagner|strauss|csajkovszkij/i
 const STAGE = /balett|tánc|színház|társulat|cirkusz|recirquel|előadás|bemutató/i
@@ -84,6 +84,8 @@ export function dayRange(from: Date, to: Date): string[] {
 
 const weekdayFmt = new Intl.DateTimeFormat('hu-HU', { timeZone: 'UTC', weekday: 'long' })
 const monthFmt = new Intl.DateTimeFormat('hu-HU', { timeZone: 'UTC', month: 'long' })
+
+export const monthName = (monthKey: string) => monthFmt.format(new Date(`${monthKey}-15T12:00:00Z`))
 
 export function describeDay(key: string) {
   const d = new Date(`${key}T12:00:00Z`)
