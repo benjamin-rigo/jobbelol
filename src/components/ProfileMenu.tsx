@@ -9,7 +9,7 @@ export function ProfileMenu({ saved, onRemove }: Props) {
         type="button"
         popoverTarget="profil"
         aria-label={`Profil, ${saved.length} mentett program`}
-        className="flex min-h-8 shrink-0 items-center gap-2 rounded-lg bg-cell px-2 font-mono text-[11px] hover:bg-raised transition-colors duration-150"
+        className="flex min-h-8 shrink-0 items-center gap-2 px-2 font-mono text-[11px] text-muted transition-colors duration-150 hover:text-paper"
       >
         <svg aria-hidden viewBox="0 0 16 16" className="size-4 fill-none stroke-current stroke-[1.5]">
           <circle cx="8" cy="5.5" r="2.75" />
