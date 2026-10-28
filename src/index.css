@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Geist", system-ui, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-sans: "Martian Mono", ui-monospace, monospace;
+  --font-mono: "Martian Mono", ui-monospace, monospace;
   --font-display: "Martian Mono", ui-monospace, monospace;
 
   --color-cell: #1e1e1e;

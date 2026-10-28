@@ -56,7 +56,7 @@ export function EventTile({ event, now, saved, onKind, onSave }: Props) {
       </div>
       <a
         {...externalLink(event.url)}
-        className={`mt-1 line-clamp-2 text-[17px] leading-snug font-medium outline-none after:absolute after:inset-0 ${cancelled ? 'line-through' : ''}`}
+        className={`mt-1 line-clamp-2 text-[17px] leading-snug font-medium [font-stretch:80%] outline-none after:absolute after:inset-0 ${cancelled ? 'line-through' : ''}`}
       >
         {event.title}
       </a>
