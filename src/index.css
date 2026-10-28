@@ -55,6 +55,11 @@
     transform: rotate(var(--texture-rotate, 0deg));
     opacity: var(--card-texture-opacity);
     mix-blend-mode: var(--card-texture-blend);
+    transition: opacity 150ms;
+  }
+
+  &:hover::after {
+    opacity: 0;
   }
 }
 
@@ -75,7 +80,7 @@
     --texture-size-szinpad: 160px, 336px;
     --texture-size-gyerek: 160px, 336px;
     --texture-size-egyeb: 160px, 336px;
-    --card-texture-opacity: 0.47;
+    --card-texture-opacity: 0.2;
     --card-texture-blend: soft-light;
   }
 

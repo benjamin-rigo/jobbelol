@@ -128,7 +128,7 @@ const DEFAULT_TEXTURE: Texture = {
   grain: true,
   library: PROJECT_TEXTURES,
   assign: { buli: 0, koncert: 1, komolyzene: 2, szinpad: 3, gyerek: 4, egyeb: 5 },
-  opacity: 0.47,
+  opacity: 0.2,
   blend: 'soft-light',
   size: 336,
 }
