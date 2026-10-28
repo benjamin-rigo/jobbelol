@@ -244,7 +244,25 @@ export function Tervezo() {
           ))}
         </section>
 
-        <section className="flex min-w-0 flex-col gap-8">
+        <section
+          className="flex min-w-0 flex-col gap-8"
+          onDragOver={(e) => {
+            const kind = (e.target as HTMLElement).closest<HTMLElement>('[data-kind]')?.dataset.kind as Kind | undefined
+            if (!kind) return
+            e.preventDefault()
+            setDropTarget(kind)
+          }}
+          onDragLeave={() => setDropTarget(null)}
+          onDrop={(e) => {
+            const kind = (e.target as HTMLElement).closest<HTMLElement>('[data-kind]')?.dataset.kind as Kind | undefined
+            const data = e.dataTransfer.getData('application/x-pair')
+            setDropTarget(null)
+            if (!kind || !data) return
+            e.preventDefault()
+            applyPair(kind, JSON.parse(data))
+          }}
+        >
+          {dropTarget && <style>{`article[data-kind="${dropTarget}"] { outline: 2px solid var(--color-paper); outline-offset: 2px; }`}</style>}
           <div>
             <h2 className="mb-4 font-mono text-xs text-muted">Kategóriák egymás mellett</h2>
             <div className="grid grid-cols-[repeat(auto-fill,256px)] gap-1">

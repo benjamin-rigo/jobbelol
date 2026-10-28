@@ -24,6 +24,7 @@ export function EventTile({ event, now, saved, onKind, onSave }: Props) {
 
   return (
     <article
+      data-kind={event.kind}
       onMouseEnter={on}
       onMouseLeave={off}
       onFocus={on}
