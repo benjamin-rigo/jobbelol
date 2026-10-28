@@ -41,7 +41,7 @@
   &::after {
     content: "";
     position: absolute;
-    inset: -50%;
+    inset: -100%;
     pointer-events: none;
     background-image: var(--card-texture);
     background-size: var(--card-texture-size);
