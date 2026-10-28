@@ -1,4 +1,4 @@
-import { StrictMode, useEffect, useMemo, useState } from 'react'
+import { StrictMode, useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { DayColumn } from '@/components/DayColumn'
@@ -153,6 +153,47 @@ export function Tervezo() {
   }, [colors])
 
   const [adjusted, setAdjusted] = useState<Record<string, boolean>>({})
+  const [past, setPast] = useState<Record<string, string>[]>([])
+  const [future, setFuture] = useState<Record<string, string>[]>([])
+  const lastField = useRef<string | null>(null)
+
+  // Consecutive edits of the same field (e.g. dragging a color picker) collapse into one history step.
+  const commit = (next: Record<string, string>, field: string | null = null) => {
+    if (field === null || field !== lastField.current) setPast((p) => [...p, colors])
+    lastField.current = field
+    setFuture([])
+    setColors(next)
+  }
+
+  const undo = () => {
+    if (!past.length) return
+    setFuture((f) => [colors, ...f])
+    setColors(past[past.length - 1])
+    setPast((p) => p.slice(0, -1))
+    setAdjusted({})
+    lastField.current = null
+  }
+
+  const redo = () => {
+    if (!future.length) return
+    setPast((p) => [...p, colors])
+    setColors(future[0])
+    setFuture((f) => f.slice(1))
+    setAdjusted({})
+    lastField.current = null
+  }
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'z') return
+      if ((e.target as HTMLElement).closest('input')) return
+      e.preventDefault()
+      if (e.shiftKey) redo()
+      else undo()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
 
   // The edited color stays as chosen; its partners shift lightness to keep contrast.
   const set = (token: string) => (value: string) => {
@@ -165,14 +206,20 @@ export function Tervezo() {
     }
     next[token] = enforce(token, value, next)
     marks[token] = next[token] !== value
-    setColors(next)
+    commit(next, token)
     setAdjusted({ ...adjusted, ...marks })
   }
+  const withPair = (c: Record<string, string>, kind: Kind, pair: Pair) => ({ ...c, [`k-${kind}`]: pair.bg, [`k-${kind}-ink`]: fitLightness(pair.ink, [pair.bg]) })
+
   const applyPair = (kind: Kind, pair: Pair) => {
-    setColors((c) => ({ ...c, [`k-${kind}`]: pair.bg, [`k-${kind}-ink`]: fitLightness(pair.ink, [pair.bg]) }))
-    setAdjusted((a) => ({ ...a, [`k-${kind}`]: false, [`k-${kind}-ink`]: false }))
+    commit(withPair(colors, kind, pair))
+    setAdjusted({ ...adjusted, [`k-${kind}`]: false, [`k-${kind}-ink`]: false })
   }
-  const autoAssign = (pairs: Pair[]) => KINDS_BY_SIZE.forEach((k, i) => pairs[i] && applyPair(k.id, pairs[i]))
+
+  const autoAssign = (pairs: Pair[]) => {
+    commit(KINDS_BY_SIZE.reduce((c, k, i) => (pairs[i] ? withPair(c, k.id, pairs[i]) : c), colors))
+    setAdjusted({})
+  }
   const [dropTarget, setDropTarget] = useState<Kind | null>(null)
   const [now] = useState(() => new Date())
 
@@ -190,7 +237,13 @@ export function Tervezo() {
         <img src="/logo.svg" alt="Jobb elöl" className="h-12 w-auto" />
         <h1 className="text-xl">Színtervező</h1>
         <div className="ml-auto flex gap-2">
-          <button type="button" onClick={() => { setColors(defaults); setAdjusted({}) }} className="min-h-8 rounded-lg bg-cell px-4 font-mono text-[11px] hover:bg-raised">
+          <button type="button" onClick={undo} disabled={!past.length} aria-label="Visszavonás" title="Visszavonás (Cmd+Z)" className="min-h-8 rounded-lg bg-cell px-4 font-mono text-[11px] hover:bg-raised disabled:opacity-40">
+            ↶ Vissza
+          </button>
+          <button type="button" onClick={redo} disabled={!future.length} aria-label="Újra" title="Újra (Cmd+Shift+Z)" className="min-h-8 rounded-lg bg-cell px-4 font-mono text-[11px] hover:bg-raised disabled:opacity-40">
+            ↷ Újra
+          </button>
+          <button type="button" onClick={() => { commit(defaults); setAdjusted({}) }} className="min-h-8 rounded-lg bg-cell px-4 font-mono text-[11px] hover:bg-raised">
             Visszaállítás
           </button>
           <button
