@@ -111,6 +111,104 @@ function ImagePairs({ onApply, onAutoAssign }: { onApply: (kind: Kind, pair: Pai
   )
 }
 
+
+type Texture = { source: 'none' | 'noise' | 'custom'; image: string | null; opacity: number; blend: string; size: number }
+
+const TEXTURE_STORAGE = 'jobbelol:tervezo:textura'
+const DEFAULT_TEXTURE: Texture = { source: 'noise', image: null, opacity: 0.2, blend: 'overlay', size: 160 }
+const BLENDS = ['overlay', 'soft-light', 'multiply', 'screen']
+
+function textureVars(t: Texture): Record<string, string> {
+  const image = t.source === 'none' ? 'none' : t.source === 'custom' && t.image ? `url(${t.image})` : 'var(--card-texture-noise)'
+  return { '--card-texture': image, '--card-texture-size': `${t.size}px`, '--card-texture-opacity': String(t.opacity), '--card-texture-blend': t.blend }
+}
+
+async function shrinkImage(file: File, max = 512) {
+  const url = URL.createObjectURL(file)
+  try {
+    const image = new Image()
+    image.src = url
+    await image.decode()
+    const scale = Math.min(1, max / Math.max(image.width, image.height))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(image.width * scale)
+    canvas.height = Math.round(image.height * scale)
+    canvas.getContext('2d')!.drawImage(image, 0, 0, canvas.width, canvas.height)
+    return canvas.toDataURL('image/jpeg', 0.85)
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
+
+function TexturePanel({ texture, onChange }: { texture: Texture; onChange: (t: Texture) => void }) {
+  const upload = async (file: File | undefined) => {
+    if (!file?.type.startsWith('image/')) return
+    onChange({ ...texture, source: 'custom', image: await shrinkImage(file) })
+  }
+  const option = (source: Texture['source'], label: string) => (
+    <button
+      type="button"
+      aria-pressed={texture.source === source}
+      onClick={() => onChange({ ...texture, source })}
+      className={`min-h-8 flex-1 rounded-lg px-2 font-mono text-[11px] ${texture.source === source ? 'bg-paper text-frame' : 'bg-cell hover:bg-raised'}`}
+    >
+      {label}
+    </button>
+  )
+
+  return (
+    <div className="flex flex-col gap-4 rounded-2xl bg-cell/40 p-4">
+      <h2 className="font-mono text-xs text-muted">Textúra</h2>
+      <div className="flex gap-2">
+        {option('none', 'Nincs')}
+        {option('noise', 'Szemcse')}
+        {option('custom', 'Saját kép')}
+      </div>
+      {texture.source === 'custom' && (
+        <label
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault()
+            upload(e.dataTransfer.files[0])
+          }}
+          className="flex min-h-16 cursor-pointer items-center justify-center gap-4 rounded-2xl bg-frame p-4 text-center text-xs text-muted"
+        >
+          {texture.image && <img src={texture.image} alt="" className="h-12 w-12 rounded-lg object-cover" />}
+          <span>{texture.image ? 'Másik textúra: húzd ide vagy kattints' : 'Húzz ide egy textúraképet, vagy kattints'}</span>
+          <input type="file" accept="image/*" className="sr-only" onChange={(e) => upload(e.target.files?.[0])} />
+        </label>
+      )}
+      {texture.source !== 'none' && (
+        <>
+          <label className="flex items-center gap-4 font-mono text-[11px] text-muted">
+            <span className="w-16">Erősség</span>
+            <input type="range" min={0} max={1} step={0.01} value={texture.opacity} onChange={(e) => onChange({ ...texture, opacity: Number(e.target.value) })} className="flex-1" />
+            <span className="w-8 text-right">{Math.round(texture.opacity * 100)}%</span>
+          </label>
+          <label className="flex items-center gap-4 font-mono text-[11px] text-muted">
+            <span className="w-16">Méret</span>
+            <input type="range" min={32} max={512} step={16} value={texture.size} onChange={(e) => onChange({ ...texture, size: Number(e.target.value) })} className="flex-1" />
+            <span className="w-8 text-right">{texture.size}</span>
+          </label>
+          <div className="flex gap-2">
+            {BLENDS.map((b) => (
+              <button
+                key={b}
+                type="button"
+                aria-pressed={texture.blend === b}
+                onClick={() => onChange({ ...texture, blend: b })}
+                className={`min-h-8 flex-1 rounded-lg px-2 font-mono text-[10px] ${texture.blend === b ? 'bg-paper text-frame' : 'bg-cell hover:bg-raised'}`}
+              >
+                {b}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 export function ColorField({ label, value, adjusted, onChange }: { label: string; value: string; adjusted: boolean; onChange: (v: string) => void }) {
   const [text, setText] = useState(value)
   const [synced, setSynced] = useState(value)
@@ -153,6 +251,16 @@ export function Tervezo() {
   }, [colors])
 
   const [adjusted, setAdjusted] = useState<Record<string, boolean>>({})
+  const [texture, setTexture] = useState<Texture>(() => ({ ...DEFAULT_TEXTURE, ...JSON.parse(localStorage.getItem(TEXTURE_STORAGE) ?? '{}') }))
+
+  useEffect(() => {
+    for (const [k, v] of Object.entries(textureVars(texture))) document.documentElement.style.setProperty(k, v)
+    try {
+      localStorage.setItem(TEXTURE_STORAGE, JSON.stringify(texture))
+    } catch {
+      localStorage.setItem(TEXTURE_STORAGE, JSON.stringify({ ...texture, image: null }))
+    }
+  }, [texture])
   const [past, setPast] = useState<Record<string, string>[]>([])
   const [future, setFuture] = useState<Record<string, string>[]>([])
   const lastField = useRef<string | null>(null)
@@ -229,7 +337,7 @@ export function Tervezo() {
     return [...byDay].sort((a, b) => new Set(b[1].map((e) => e.kind)).size - new Set(a[1].map((e) => e.kind)).size).slice(0, 4).sort((a, b) => a[0].localeCompare(b[0]))
   }, [now])
 
-  const css = ALL_TOKENS.map((t) => `  --color-${t}: ${colors[t]};`).join('\n')
+  const css = [...ALL_TOKENS.map((t) => `  --color-${t}: ${colors[t]};`), ...Object.entries(textureVars(texture)).map(([k, v]) => `  ${k}: ${v};`)].join('\n')
 
   return (
     <div className="min-h-dvh bg-frame p-8 text-paper">
@@ -263,6 +371,7 @@ export function Tervezo() {
       <div className="grid gap-8 lg:grid-cols-[384px_1fr]">
         <section className="flex flex-col gap-6">
           <ImagePairs onApply={applyPair} onAutoAssign={autoAssign} />
+          <TexturePanel texture={texture} onChange={setTexture} />
 
           <div className="flex flex-col gap-2 rounded-2xl bg-cell/40 p-4">
             <h2 className="mb-2 font-mono text-xs text-muted">Alapszínek</h2>

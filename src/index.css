@@ -34,7 +34,29 @@
   }
 }
 
+@utility card-texture {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background-image: var(--card-texture);
+    background-size: var(--card-texture-size);
+    opacity: var(--card-texture-opacity);
+    mix-blend-mode: var(--card-texture-blend);
+  }
+}
+
 @layer base {
+  :root {
+    --card-texture-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+    --card-texture: var(--card-texture-noise);
+    --card-texture-size: 160px;
+    --card-texture-opacity: 0.2;
+    --card-texture-blend: overlay;
+  }
+
   html {
     color-scheme: dark;
     background: var(--color-cell);
