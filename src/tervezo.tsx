@@ -6,7 +6,6 @@ import { EventTile } from '@/components/EventTile'
 import { MIN_CONTRAST, contrast, fitLightness, isHex } from '@/lib/color'
 import { KINDS, dayKey, events, type Kind } from '@/lib/events'
 import { pairsFromImage, type Pair } from '@/lib/palette'
-import { ACTIONS_URL, publishTheme, uploadTexture } from '@/lib/publish'
 
 const STORAGE = 'jobbelol:tervezo'
 
@@ -137,13 +136,13 @@ const BLENDS = ['overlay', 'soft-light', 'multiply', 'screen']
 
 const GRAIN_SIZE = '160px'
 
-function textureVars(t: Texture, resolve: (image: string) => string = (image) => image): Record<string, string> {
+function textureVars(t: Texture): Record<string, string> {
   const vars: Record<string, string> = { '--card-texture-opacity': String(t.opacity), '--card-texture-blend': t.blend }
   for (const k of KINDS) {
     const layers: [string, string][] = []
     if (t.grain) layers.push(['var(--card-texture-noise)', GRAIN_SIZE])
     const image = t.library[t.assign[k.id] ?? -1]
-    if (image) layers.push([`url(${resolve(image)})`, `${t.size}px`])
+    if (image) layers.push([`url(${image})`, `${t.size}px`])
     vars[`--texture-${k.id}`] = layers.map(([i]) => i).join(', ') || 'none'
     vars[`--texture-size-${k.id}`] = layers.map(([, size]) => size).join(', ') || GRAIN_SIZE
   }
@@ -321,70 +320,6 @@ function TexturePicker({ texture, kind, onChange }: { texture: Texture; kind: Ki
 }
 
 
-const TOKEN_STORAGE = 'jobbelol:tervezo:github-token'
-
-// Builds theme.css for the live site: uploaded textures become files, paths are relative to theme.css.
-async function buildTheme(token: string, colors: Record<string, string>, texture: Texture) {
-  const used = new Set(KINDS.map((k) => texture.library[texture.assign[k.id] ?? -1]).filter(Boolean))
-  const paths = new Map<string, string>()
-  for (const image of used) {
-    paths.set(image, image.startsWith('data:') ? await uploadTexture(token, image) : image.replace(import.meta.env.BASE_URL, ''))
-  }
-  const vars = [...ALL_TOKENS.map((t) => `  --color-${t}: ${colors[t]};`), ...Object.entries(textureVars(texture, (i) => `"${paths.get(i)}"`)).map(([k, v]) => `  ${k}: ${v};`)]
-  return `/* Written by the designer (tervezo.html) via "Publikálás élesbe"; overrides the defaults in src/index.css. */\nhtml:root {\n${vars.join('\n')}\n}\n`
-}
-
-function PublishPanel({ colors, texture }: { colors: Record<string, string>; texture: Texture }) {
-  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_STORAGE) ?? '')
-  const [status, setStatus] = useState<{ kind: 'idle' | 'working' | 'done' | 'error'; text?: string }>({ kind: 'idle' })
-
-  const publish = async () => {
-    localStorage.setItem(TOKEN_STORAGE, token)
-    setStatus({ kind: 'working', text: 'Feltöltés…' })
-    try {
-      await publishTheme(token, await buildTheme(token, colors, texture))
-      setStatus({ kind: 'done', text: 'Feltöltve. Az élő oldal kb. egy perc múlva frissül.' })
-    } catch (e) {
-      setStatus({ kind: 'error', text: e instanceof Error ? e.message : String(e) })
-    }
-  }
-
-  return (
-    <div className="flex flex-col gap-4 rounded-2xl bg-cell/40 p-4">
-      <h2 className="font-mono text-xs text-muted">Publikálás élesbe</h2>
-      <label className="flex flex-col gap-2 font-mono text-[11px] text-muted">
-        GitHub token (csak ebben a böngészőben tárolva)
-        <input
-          type="password"
-          autoComplete="off"
-          value={token}
-          onChange={(e) => setToken(e.target.value.trim())}
-          placeholder="github_pat_…"
-          className="min-h-8 rounded-lg bg-frame px-2 text-paper"
-        />
-      </label>
-      <button
-        type="button"
-        disabled={!token || status.kind === 'working'}
-        onClick={publish}
-        className="min-h-8 rounded-lg bg-paper px-4 font-mono text-[11px] text-frame hover:opacity-80 disabled:opacity-40"
-      >
-        {status.kind === 'working' ? 'Feltöltés…' : 'Publikálás élesbe'}
-      </button>
-      {status.text && status.kind !== 'working' && (
-        <p role="status" className="text-xs text-muted">
-          {status.text}{' '}
-          {status.kind === 'done' && (
-            <a href={ACTIONS_URL} target="_blank" rel="noopener noreferrer" className="underline">
-              Telepítés követése
-            </a>
-          )}
-        </p>
-      )}
-    </div>
-  )
-}
-
 export function ColorField({ label, value, adjusted, onChange }: { label: string; value: string; adjusted: boolean; onChange: (v: string) => void }) {
   const [text, setText] = useState(value)
   const [synced, setSynced] = useState(value)
@@ -558,7 +493,6 @@ export function Tervezo() {
 
       <div className="grid gap-8 lg:grid-cols-[384px_1fr]">
         <section className="flex flex-col gap-6">
-          <PublishPanel colors={colors} texture={texture} />
           <ImagePairs onApply={applyPair} onAutoAssign={autoAssign} />
           <TexturePanel texture={texture} onChange={setTexture} />
 
