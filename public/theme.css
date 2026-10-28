@@ -1,1 +1,19 @@
 /* Written by the designer (tervezo.html) via Claude; overrides the defaults in src/index.css. */
+html:root {
+  --color-frame: #111111;
+  --color-cell: #1e1e1e;
+  --color-paper: #b5b3ad;
+  --color-muted: #8f8d89;
+  --color-k-buli: #000000;
+  --color-k-buli-ink: #fe4704;
+  --color-k-koncert: #fefdfb;
+  --color-k-koncert-ink: #0547fb;
+  --color-k-komolyzene: #ffd6ee;
+  --color-k-komolyzene-ink: #362fbc;
+  --color-k-szinpad: #f5f5f5;
+  --color-k-szinpad-ink: #000000;
+  --color-k-gyerek: #ffd561;
+  --color-k-gyerek-ink: #0c4e2b;
+  --color-k-egyeb: #000000;
+  --color-k-egyeb-ink: #ababab;
+}
