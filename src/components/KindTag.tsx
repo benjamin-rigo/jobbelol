@@ -2,6 +2,7 @@ import { KINDS, type Kind } from '@/lib/events'
 import { Dropdown, type Option } from './Dropdown'
 
 const labels = Object.fromEntries(KINDS.map((k) => [k.id, k.label]))
+const tags = Object.fromEntries(KINDS.map((k) => [k.id, k.tag]))
 
 type Props = { kind: Kind; onSelect: () => void }
 
@@ -11,7 +12,7 @@ export function KindTag({ kind, onSelect }: Props) {
       type="button"
       aria-label={`Szűrés: ${labels[kind]}`}
       onClick={onSelect}
-      className="relative z-10 rounded-full bg-paper px-2 py-0.5 font-sans text-[11px] leading-tight font-medium text-frame transition-opacity duration-150 hover:opacity-80"
+      className={`relative z-10 rounded-full px-2 py-0.5 font-sans text-[11px] leading-tight font-medium transition-opacity duration-150 hover:opacity-80 ${tags[kind]}`}
     >
       {labels[kind].toLowerCase()}
     </button>

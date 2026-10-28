@@ -10,6 +10,19 @@
   --color-frame: #111111;
   --color-raised: #2a2a2a;
 
+  --color-k-koncert: #3459a6;
+  --color-k-koncert-ink: #f0d1c4;
+  --color-k-buli: #741862;
+  --color-k-buli-ink: #f7a35c;
+  --color-k-komolyzene: #a9d3e0;
+  --color-k-komolyzene-ink: #173f2e;
+  --color-k-szinpad: #165630;
+  --color-k-szinpad-ink: #f4b3d8;
+  --color-k-gyerek: #f2d024;
+  --color-k-gyerek-ink: #141414;
+  --color-k-egyeb: #ece7de;
+  --color-k-egyeb-ink: #2f5fb0;
+
   --spacing-tile: 8rem;
 
   --animate-marquee: marquee linear both;
