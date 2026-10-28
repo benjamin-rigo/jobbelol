@@ -21,7 +21,7 @@ export function KindTag({ kind, onSelect }: Props) {
 
 type SelectProps = { kind: Kind | null; onKind: (kind: Kind | null) => void; className?: string }
 
-const kindOptions: Option<Kind | null>[] = [{ value: null, label: 'Minden kategória' }, ...KINDS.map((k) => ({ value: k.id, label: k.label }))]
+const kindOptions: Option<Kind | null>[] = [{ value: null, label: 'Minden kategória' }, ...KINDS.map((k) => ({ value: k.id, label: k.label, swatch: k.swatch }))]
 
 export function KindSelect({ kind, onKind, className }: SelectProps) {
   return <Dropdown label="Kategória" value={kind} options={kindOptions} onChange={onKind} className={className} />

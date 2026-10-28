@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 
-export type Option<T> = { value: T; label: string }
+export type Option<T> = { value: T; label: string; swatch?: string }
 
 type Props<T> = {
   label: string
@@ -77,7 +77,8 @@ export function Dropdown<T extends string | null>({ label, value, options, onCha
         className="flex min-h-8 w-full items-center gap-2 rounded-lg bg-cell pr-2 pl-4 font-mono text-[11px] hover:bg-raised aria-expanded:bg-raised transition-colors duration-150"
       >
         <span className="truncate">{current.label}</span>
-        <svg aria-hidden viewBox="0 0 16 16" className={`ml-auto size-4 shrink-0 fill-none stroke-current stroke-[1.5] ${open ? 'rotate-180' : ''}`}>
+        {current.swatch && <span aria-hidden className={`ml-auto size-2 shrink-0 rounded-full ${current.swatch}`} />}
+        <svg aria-hidden viewBox="0 0 16 16" className={`${current.swatch ? '' : 'ml-auto'} size-4 shrink-0 fill-none stroke-current stroke-[1.5] ${open ? 'rotate-180' : ''}`}>
           <path d="M4 6l4 4 4-4" />
         </svg>
       </button>
@@ -106,11 +107,14 @@ export function Dropdown<T extends string | null>({ label, value, options, onCha
                 className={`flex cursor-pointer items-center gap-2 rounded px-2 py-2 ${i === active ? 'bg-frame' : ''}`}
               >
                 <span className="truncate">{o.label}</span>
-                {selected && (
-                  <svg aria-hidden viewBox="0 0 16 16" className="ml-auto size-4 shrink-0 fill-none stroke-current stroke-[1.5]">
-                    <path d="M3.5 8.5l3 3 6-7" />
-                  </svg>
-                )}
+                <span className="ml-auto flex shrink-0 items-center gap-2">
+                  {selected && (
+                    <svg aria-hidden viewBox="0 0 16 16" className="size-4 fill-none stroke-current stroke-[1.5]">
+                      <path d="M3.5 8.5l3 3 6-7" />
+                    </svg>
+                  )}
+                  {o.swatch && <span aria-hidden className={`size-2 rounded-full ${o.swatch}`} />}
+                </span>
               </li>
             )
           })}
