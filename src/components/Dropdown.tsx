@@ -82,7 +82,7 @@ export function Dropdown<T extends string | null>({ label, value, options, onCha
           }
         }}
         style={rainbow ? RAINBOW : undefined}
-        className={`flex min-h-8 w-full items-center gap-2 rounded-lg pr-2 pl-4 font-mono text-[11px] transition-colors duration-150 ${
+        className={`flex min-h-12 w-full items-center gap-2 rounded-lg pr-4 pl-4 font-mono text-sm transition-colors duration-150 ${
           rainbow
             ? 'border-2 border-transparent [--fill:var(--color-cell)] hover:[--fill:var(--color-raised)] aria-expanded:[--fill:var(--color-raised)]'
             : 'bg-cell hover:bg-raised aria-expanded:bg-raised'
@@ -103,7 +103,7 @@ export function Dropdown<T extends string | null>({ label, value, options, onCha
           aria-label={label}
           aria-activedescendant={`${id}-${active}`}
           onKeyDown={onKeyDown}
-          className="absolute top-full right-0 z-50 mt-1 max-h-96 w-full overflow-y-auto rounded-lg bg-cell p-2 font-mono text-[11px] outline-none"
+          className="absolute top-full right-0 z-50 mt-1 max-h-96 w-full overflow-y-auto rounded-lg bg-cell p-2 font-mono text-sm outline-none"
         >
           {options.map((o, i) => {
             const selected = o.value === value

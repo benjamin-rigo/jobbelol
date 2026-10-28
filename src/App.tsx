@@ -47,8 +47,8 @@ export default function App() {
           <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="Jobb elöl" className="h-16 w-auto" />
         </h1>
         <p className="ml-4 font-display text-2xl leading-none font-extrabold text-paper sm:mr-4">Budapest egy helyen.</p>
-        <KindSelect kind={kind} onKind={setKind} className="ml-auto hidden w-48 xl:block" />
-        <VenueSelect venue={venue} venues={venues} onVenue={setVenue} className="hidden w-48 xl:block" />
+        <KindSelect kind={kind} onKind={setKind} className="ml-auto hidden w-64 xl:block" />
+        <VenueSelect venue={venue} venues={venues} onVenue={setVenue} className="hidden w-64 xl:block" />
         <div className="ml-auto xl:ml-0">
           <FilterMenu kind={kind} venue={venue} venues={venues} onKind={setKind} onVenue={setVenue} />
         </div>

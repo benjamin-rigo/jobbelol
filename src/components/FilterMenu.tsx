@@ -19,7 +19,7 @@ export function FilterMenu({ kind, venue, venues, onKind, onVenue }: Props) {
         type="button"
         popoverTarget="szurok"
         aria-label={active ? `Szűrők, ${active} aktív` : 'Szűrők'}
-        className="flex min-h-8 shrink-0 items-center gap-2 rounded-lg bg-cell px-2 font-mono text-[11px] hover:bg-raised xl:hidden transition-colors duration-150"
+        className="flex min-h-12 shrink-0 items-center gap-2 rounded-lg bg-cell px-4 font-mono text-sm hover:bg-raised xl:hidden transition-colors duration-150"
       >
         <svg aria-hidden viewBox="0 0 16 16" className="size-4 fill-none stroke-current stroke-[1.5]">
           <path d="M2 3h12L9.5 8.5V13l-3-1.5v-3z" />
@@ -30,7 +30,7 @@ export function FilterMenu({ kind, venue, venues, onKind, onVenue }: Props) {
       <div
         id="szurok"
         popover="auto"
-        className="fixed inset-auto top-24 right-4 m-0 w-64 rounded-2xl bg-frame p-4 text-paper"
+        className="fixed inset-auto top-24 right-4 m-0 w-80 max-w-[calc(100vw-32px)] rounded-2xl bg-frame p-4 text-paper"
       >
         <p className="font-mono text-xs text-paper">Kategória</p>
         <KindSelect kind={kind} onKind={onKind} className="mt-2 mb-6" />
@@ -45,7 +45,7 @@ export function FilterMenu({ kind, venue, venues, onKind, onVenue }: Props) {
               onKind(null)
               onVenue(null)
             }}
-            className="mt-6 min-h-8 w-full rounded-lg bg-cell text-sm text-paper hover:bg-raised transition-colors duration-150"
+            className="mt-6 min-h-12 w-full rounded-lg bg-cell text-sm text-paper hover:bg-raised transition-colors duration-150"
           >
             Szűrők törlése
           </button>

@@ -10,10 +10,10 @@ export function ProfileMenu({ saved, onRemove }: Props) {
         type="button"
         popoverTarget="profil"
         aria-label={`Profil, ${saved.length} mentett program`}
-        className="relative size-8 shrink-0 rounded-full bg-paper transition-opacity duration-150 hover:opacity-80"
+        className="relative size-12 shrink-0 rounded-full bg-paper transition-opacity duration-150 hover:opacity-80"
       >
         {saved.length > 0 && (
-          <span className="absolute -top-1 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-frame px-1 font-mono text-[10px] leading-none text-paper">
+          <span className="absolute -top-1 -right-1 grid h-6 min-w-6 place-items-center rounded-full bg-frame px-1 font-mono text-xs leading-none text-paper">
             {saved.length}
           </span>
         )}
