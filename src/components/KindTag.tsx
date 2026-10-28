@@ -3,6 +3,7 @@ import { KINDS, type Kind } from '@/lib/events'
 import { Dropdown, type Option } from './Dropdown'
 
 const labels = Object.fromEntries(KINDS.map((k) => [k.id, k.label]))
+const inks = Object.fromEntries(KINDS.map((k) => [k.id, k.ink]))
 
 // Shapes are filled with the card's ink; holes punch through to the card color.
 const icons: Record<Kind, { shape: ReactNode; holes?: ReactNode }> = {
@@ -82,7 +83,7 @@ export function KindTag({ kind, onSelect }: Props) {
       aria-label={`Szűrés: ${labels[kind]}`}
       title={labels[kind]}
       onClick={onSelect}
-      className="relative z-10 -my-2 -mr-1 p-1 transition-transform duration-150 hover:scale-125 hover:-rotate-12"
+      className={`relative z-10 -my-2 -mr-1 p-1 transition-transform duration-150 hover:scale-125 hover:-rotate-12 ${inks[kind]}`}
     >
       <KindIcon kind={kind} className="size-6" />
     </button>
