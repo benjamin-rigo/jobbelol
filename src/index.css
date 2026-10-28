@@ -10,18 +10,18 @@
   --color-frame: #111111;
   --color-raised: #2a2a2a;
 
-  --color-k-koncert: #3459a6;
-  --color-k-koncert-ink: #f0d1c4;
-  --color-k-buli: #8a173f;
-  --color-k-buli-ink: #f6b183;
-  --color-k-komolyzene: #5e2a4b;
+  --color-k-koncert: #6887e7;
+  --color-k-koncert-ink: #141319;
+  --color-k-buli: #010000;
+  --color-k-buli-ink: #f0b7cc;
+  --color-k-komolyzene: #4e183a;
   --color-k-komolyzene-ink: #f2a7c3;
-  --color-k-szinpad: #3b2f72;
-  --color-k-szinpad-ink: #d9ccf7;
-  --color-k-gyerek: #0e4a2c;
-  --color-k-gyerek-ink: #cda8e6;
-  --color-k-egyeb: #3b3835;
-  --color-k-egyeb-ink: #d9d4cc;
+  --color-k-szinpad: #dfb9c7;
+  --color-k-szinpad-ink: #092049;
+  --color-k-gyerek: #598c52;
+  --color-k-gyerek-ink: #141319;
+  --color-k-egyeb: #342e33;
+  --color-k-egyeb-ink: #f6eaf5;
 
   --spacing-tile: 8rem;
 
@@ -55,10 +55,10 @@
 @layer base {
   :root {
     --card-texture-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
-    --card-texture-default: var(--card-texture-noise);
-    --card-texture-size-default: 160px;
-    --card-texture-opacity: 0.2;
-    --card-texture-blend: overlay;
+    --card-texture-default: var(--card-texture-noise), url("/textura.jpg");
+    --card-texture-size-default: 160px, 336px;
+    --card-texture-opacity: 0.47;
+    --card-texture-blend: soft-light;
   }
 
   html {
