@@ -8,9 +8,16 @@ type Props<T> = {
   options: Option<T>[]
   onChange: (value: T) => void
   className?: string
+  rainbow?: boolean
 }
 
-export function Dropdown<T extends string | null>({ label, value, options, onChange, className = '' }: Props<T>) {
+// All category card colors around the border; the fill sits on top via padding-box.
+const RAINBOW = {
+  background:
+    'linear-gradient(var(--fill), var(--fill)) padding-box, conic-gradient(var(--color-k-koncert), var(--color-k-buli), var(--color-k-komolyzene), var(--color-k-szinpad), var(--color-k-gyerek), var(--color-k-egyeb), var(--color-k-koncert)) border-box',
+}
+
+export function Dropdown<T extends string | null>({ label, value, options, onChange, className = '', rainbow = false }: Props<T>) {
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(0)
   const root = useRef<HTMLDivElement>(null)
@@ -74,7 +81,12 @@ export function Dropdown<T extends string | null>({ label, value, options, onCha
             show()
           }
         }}
-        className="flex min-h-8 w-full items-center gap-2 rounded-lg bg-cell pr-2 pl-4 font-mono text-[11px] hover:bg-raised aria-expanded:bg-raised transition-colors duration-150"
+        style={rainbow ? RAINBOW : undefined}
+        className={`flex min-h-8 w-full items-center gap-2 rounded-lg pr-2 pl-4 font-mono text-[11px] transition-colors duration-150 ${
+          rainbow
+            ? 'border-2 border-transparent [--fill:var(--color-cell)] hover:[--fill:var(--color-raised)] aria-expanded:[--fill:var(--color-raised)]'
+            : 'bg-cell hover:bg-raised aria-expanded:bg-raised'
+        }`}
       >
         <span className="truncate">{current.label}</span>
         {current.swatch && <span aria-hidden className={`ml-auto size-2 shrink-0 rounded-full ${current.swatch}`} />}
