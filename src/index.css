@@ -35,14 +35,18 @@
 }
 
 @utility card-texture {
+  overflow: hidden;
+
+  /* Oversized so the rotated layer still covers the whole card. */
   &::after {
     content: "";
     position: absolute;
-    inset: 0;
-    border-radius: inherit;
+    inset: -50%;
     pointer-events: none;
     background-image: var(--card-texture);
     background-size: var(--card-texture-size);
+    background-position: var(--texture-shift, 0 0);
+    transform: rotate(var(--texture-rotate, 0deg));
     opacity: var(--card-texture-opacity);
     mix-blend-mode: var(--card-texture-blend);
   }

@@ -112,15 +112,24 @@ function ImagePairs({ onApply, onAutoAssign }: { onApply: (kind: Kind, pair: Pai
 }
 
 
-type Texture = { source: 'none' | 'noise' | 'custom'; image: string | null; opacity: number; blend: string; size: number }
+type Texture = { grain: boolean; useImage: boolean; image: string | null; opacity: number; blend: string; size: number }
 
 const TEXTURE_STORAGE = 'jobbelol:tervezo:textura'
-const DEFAULT_TEXTURE: Texture = { source: 'noise', image: null, opacity: 0.2, blend: 'overlay', size: 160 }
+const DEFAULT_TEXTURE: Texture = { grain: true, useImage: false, image: null, opacity: 0.2, blend: 'overlay', size: 160 }
 const BLENDS = ['overlay', 'soft-light', 'multiply', 'screen']
 
+const GRAIN_SIZE = '160px'
+
 function textureVars(t: Texture): Record<string, string> {
-  const image = t.source === 'none' ? 'none' : t.source === 'custom' && t.image ? `url(${t.image})` : 'var(--card-texture-noise)'
-  return { '--card-texture': image, '--card-texture-size': `${t.size}px`, '--card-texture-opacity': String(t.opacity), '--card-texture-blend': t.blend }
+  const layers: [string, string][] = []
+  if (t.grain) layers.push(['var(--card-texture-noise)', GRAIN_SIZE])
+  if (t.useImage && t.image) layers.push([`url(${t.image})`, `${t.size}px`])
+  return {
+    '--card-texture': layers.map(([image]) => image).join(', ') || 'none',
+    '--card-texture-size': layers.map(([, size]) => size).join(', ') || GRAIN_SIZE,
+    '--card-texture-opacity': String(t.opacity),
+    '--card-texture-blend': t.blend,
+  }
 }
 
 async function shrinkImage(file: File, max = 512) {
@@ -143,28 +152,28 @@ async function shrinkImage(file: File, max = 512) {
 function TexturePanel({ texture, onChange }: { texture: Texture; onChange: (t: Texture) => void }) {
   const upload = async (file: File | undefined) => {
     if (!file?.type.startsWith('image/')) return
-    onChange({ ...texture, source: 'custom', image: await shrinkImage(file) })
+    onChange({ ...texture, useImage: true, image: await shrinkImage(file) })
   }
-  const option = (source: Texture['source'], label: string) => (
+  const toggle = (key: 'grain' | 'useImage', label: string) => (
     <button
       type="button"
-      aria-pressed={texture.source === source}
-      onClick={() => onChange({ ...texture, source })}
-      className={`min-h-8 flex-1 rounded-lg px-2 font-mono text-[11px] ${texture.source === source ? 'bg-paper text-frame' : 'bg-cell hover:bg-raised'}`}
+      aria-pressed={texture[key]}
+      onClick={() => onChange({ ...texture, [key]: !texture[key] })}
+      className={`min-h-8 flex-1 rounded-lg px-2 font-mono text-[11px] ${texture[key] ? 'bg-paper text-frame' : 'bg-cell hover:bg-raised'}`}
     >
       {label}
     </button>
   )
+  const active = texture.grain || (texture.useImage && texture.image)
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl bg-cell/40 p-4">
       <h2 className="font-mono text-xs text-muted">Textúra</h2>
       <div className="flex gap-2">
-        {option('none', 'Nincs')}
-        {option('noise', 'Szemcse')}
-        {option('custom', 'Saját kép')}
+        {toggle('grain', 'Szemcse')}
+        {toggle('useImage', 'Saját kép')}
       </div>
-      {texture.source === 'custom' && (
+      {texture.useImage && (
         <label
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => {
@@ -178,7 +187,7 @@ function TexturePanel({ texture, onChange }: { texture: Texture; onChange: (t: T
           <input type="file" accept="image/*" className="sr-only" onChange={(e) => upload(e.target.files?.[0])} />
         </label>
       )}
-      {texture.source !== 'none' && (
+      {active && (
         <>
           <label className="flex items-center gap-4 font-mono text-[11px] text-muted">
             <span className="w-16">Erősség</span>
@@ -186,8 +195,8 @@ function TexturePanel({ texture, onChange }: { texture: Texture; onChange: (t: T
             <span className="w-8 text-right">{Math.round(texture.opacity * 100)}%</span>
           </label>
           <label className="flex items-center gap-4 font-mono text-[11px] text-muted">
-            <span className="w-16">Méret</span>
-            <input type="range" min={32} max={512} step={16} value={texture.size} onChange={(e) => onChange({ ...texture, size: Number(e.target.value) })} className="flex-1" />
+            <span className="w-16">Képméret</span>
+            <input type="range" min={32} max={512} step={16} disabled={!texture.useImage} value={texture.size} onChange={(e) => onChange({ ...texture, size: Number(e.target.value) })} className="flex-1" />
             <span className="w-8 text-right">{texture.size}</span>
           </label>
           <div className="flex gap-2">
@@ -251,7 +260,11 @@ export function Tervezo() {
   }, [colors])
 
   const [adjusted, setAdjusted] = useState<Record<string, boolean>>({})
-  const [texture, setTexture] = useState<Texture>(() => ({ ...DEFAULT_TEXTURE, ...JSON.parse(localStorage.getItem(TEXTURE_STORAGE) ?? '{}') }))
+  const [texture, setTexture] = useState<Texture>(() => {
+    const saved = JSON.parse(localStorage.getItem(TEXTURE_STORAGE) ?? '{}')
+    if ('source' in saved) Object.assign(saved, { grain: saved.source === 'noise', useImage: saved.source === 'custom' })
+    return { ...DEFAULT_TEXTURE, ...saved }
+  })
 
   useEffect(() => {
     for (const [k, v] of Object.entries(textureVars(texture))) document.documentElement.style.setProperty(k, v)
