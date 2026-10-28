@@ -1,12 +1,12 @@
 import clubs from '@/data/clubs.snapshot.json'
 
 export const KINDS = [
-  { id: 'buli', label: 'Buli', card: 'bg-k-buli text-k-buli-ink', ink: 'text-k-buli-ink', swatch: 'bg-k-buli' },
-  { id: 'koncert', label: 'Koncert', card: 'bg-k-koncert text-k-koncert-ink', ink: 'text-k-koncert-ink', swatch: 'bg-k-koncert' },
-  { id: 'komolyzene', label: 'Komolyzene', card: 'bg-k-komolyzene text-k-komolyzene-ink', ink: 'text-k-komolyzene-ink', swatch: 'bg-k-komolyzene' },
-  { id: 'szinpad', label: 'Színpad', card: 'bg-k-szinpad text-k-szinpad-ink', ink: 'text-k-szinpad-ink', swatch: 'bg-k-szinpad' },
-  { id: 'gyerek', label: 'Gyerek', card: 'bg-k-gyerek text-k-gyerek-ink', ink: 'text-k-gyerek-ink', swatch: 'bg-k-gyerek' },
-  { id: 'egyeb', label: 'Egyéb', card: 'bg-k-egyeb text-k-egyeb-ink', ink: 'text-k-egyeb-ink', swatch: 'bg-k-egyeb' },
+  { id: 'buli', label: 'Buli', card: 'bg-k-buli text-k-buli-ink', ink: 'text-k-buli-ink' },
+  { id: 'koncert', label: 'Koncert', card: 'bg-k-koncert text-k-koncert-ink', ink: 'text-k-koncert-ink' },
+  { id: 'komolyzene', label: 'Komolyzene', card: 'bg-k-komolyzene text-k-komolyzene-ink', ink: 'text-k-komolyzene-ink' },
+  { id: 'szinpad', label: 'Színpad', card: 'bg-k-szinpad text-k-szinpad-ink', ink: 'text-k-szinpad-ink' },
+  { id: 'gyerek', label: 'Gyerek', card: 'bg-k-gyerek text-k-gyerek-ink', ink: 'text-k-gyerek-ink' },
+  { id: 'egyeb', label: 'Egyéb', card: 'bg-k-egyeb text-k-egyeb-ink', ink: 'text-k-egyeb-ink' },
 ] as const
 
 export type Kind = (typeof KINDS)[number]['id']

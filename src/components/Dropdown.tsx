@@ -1,6 +1,6 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 
-export type Option<T> = { value: T; label: string; swatch?: string }
+export type Option<T> = { value: T; label: string; mark?: ReactNode }
 
 type Props<T> = {
   label: string
@@ -11,10 +11,10 @@ type Props<T> = {
   rainbow?: boolean
 }
 
-// Category card colors around the border (buli uses its ink; egyéb is left out so the blue gets more room); the fill sits on top via padding-box.
+// The most distinctive color of each category around the border; the fill sits on top via padding-box.
 const RAINBOW = {
   background:
-    'linear-gradient(var(--fill), var(--fill)) padding-box, conic-gradient(var(--color-k-koncert), var(--color-k-buli-ink), var(--color-k-komolyzene), var(--color-k-szinpad), var(--color-k-gyerek), var(--color-k-koncert)) border-box',
+    'linear-gradient(var(--fill), var(--fill)) padding-box, conic-gradient(var(--color-k-koncert-ink), var(--color-k-buli-ink), var(--color-k-gyerek), var(--color-k-komolyzene), var(--color-k-komolyzene-ink), var(--color-k-koncert-ink)) border-box',
 }
 
 export function Dropdown<T extends string | null>({ label, value, options, onChange, className = '', rainbow = false }: Props<T>) {
@@ -89,8 +89,8 @@ export function Dropdown<T extends string | null>({ label, value, options, onCha
         }`}
       >
         <span className="truncate">{current.label}</span>
-        {current.swatch && <span aria-hidden className={`ml-auto size-2 shrink-0 rounded-full ${current.swatch}`} />}
-        <svg aria-hidden viewBox="0 0 16 16" className={`${current.swatch ? '' : 'ml-auto'} size-4 shrink-0 fill-none stroke-current stroke-[1.5] ${open ? 'rotate-180' : ''}`}>
+        {current.mark && <span className="ml-auto shrink-0">{current.mark}</span>}
+        <svg aria-hidden viewBox="0 0 16 16" className={`${current.mark ? '' : 'ml-auto'} size-4 shrink-0 fill-none stroke-current stroke-[1.5] ${open ? 'rotate-180' : ''}`}>
           <path d="M4 6l4 4 4-4" />
         </svg>
       </button>
@@ -125,7 +125,7 @@ export function Dropdown<T extends string | null>({ label, value, options, onCha
                       <path d="M3.5 8.5l3 3 6-7" />
                     </svg>
                   )}
-                  {o.swatch && <span aria-hidden className={`size-2 rounded-full ${o.swatch}`} />}
+                  {o.mark}
                 </span>
               </li>
             )

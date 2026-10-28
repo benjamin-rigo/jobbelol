@@ -74,6 +74,17 @@ export function KindIcon({ kind, className }: { kind: Kind; className?: string }
   )
 }
 
+const cards = Object.fromEntries(KINDS.map((k) => [k.id, k.card]))
+
+// A tiny card: the category's background with its icon in the ink color.
+function KindChip({ kind }: { kind: Kind }) {
+  return (
+    <span aria-hidden className={`grid size-6 place-items-center rounded-lg ${cards[kind]}`}>
+      <KindIcon kind={kind} className="size-4" />
+    </span>
+  )
+}
+
 type Props = { kind: Kind; onSelect: () => void }
 
 export function KindTag({ kind, onSelect }: Props) {
@@ -92,7 +103,7 @@ export function KindTag({ kind, onSelect }: Props) {
 
 type SelectProps = { kind: Kind | null; onKind: (kind: Kind | null) => void; className?: string }
 
-const kindOptions: Option<Kind | null>[] = [{ value: null, label: 'Minden kategória' }, ...KINDS.map((k) => ({ value: k.id, label: k.label, swatch: k.swatch }))]
+const kindOptions: Option<Kind | null>[] = [{ value: null, label: 'Minden kategória' }, ...KINDS.map((k) => ({ value: k.id, label: k.label, mark: <KindChip kind={k.id} /> }))]
 
 export function KindSelect({ kind, onKind, className }: SelectProps) {
   return <Dropdown label="Kategória" value={kind} options={kindOptions} onChange={onKind} className={className} rainbow={kind === null} />
