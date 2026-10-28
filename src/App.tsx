@@ -42,7 +42,7 @@ export default function App() {
 
   return (
     <div className="flex h-dvh flex-col">
-      <header className="relative z-40 flex items-center gap-2 bg-frame pt-4 pr-4 pb-2 pl-9">
+      <header className="relative z-40 flex items-center gap-2 bg-frame pt-4 pr-4 pb-2 pl-9 sm:pl-13">
         <h1 className="shrink-0">
           <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="Jobb elöl" className="h-16 w-auto" />
         </h1>
@@ -59,7 +59,7 @@ export default function App() {
         ref={board}
         tabIndex={0}
         aria-label="Programok napok szerint"
-        className="relative min-h-0 flex-1 snap-x snap-mandatory scroll-pl-9 overflow-auto bg-frame sm:snap-none"
+        className="relative min-h-0 flex-1 snap-x snap-mandatory scroll-pl-9 overflow-auto sm:scroll-pl-13 bg-frame sm:snap-none"
       >
         <div className="flex min-h-full w-max gap-1 pr-1">
           {[...months].map(([month, monthDays], i) => (

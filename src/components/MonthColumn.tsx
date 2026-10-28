@@ -3,7 +3,7 @@ import { monthName } from '@/lib/events'
 
 type Props = { monthKey: string; fromRight: number; onSelect: () => void }
 
-const STRIP = 2
+const STRIP = 3
 
 export function MonthColumn({ monthKey, fromRight, onSelect }: Props) {
   const name = monthName(monthKey)
@@ -14,7 +14,7 @@ export function MonthColumn({ monthKey, fromRight, onSelect }: Props) {
       onClick={onSelect}
       aria-label={`Ugrás: ${name}`}
       style={{ '--right': `${fromRight * STRIP}rem` } as CSSProperties}
-      className="group sticky left-0 z-30 flex w-8 shrink-0 flex-col sm:right-(--right) items-center bg-frame text-muted transition-colors duration-150 hover:text-paper focus-visible:-outline-offset-2"
+      className="group sticky left-0 z-30 flex w-8 shrink-0 sm:w-12 flex-col sm:right-(--right) items-center bg-frame text-muted transition-colors duration-150 hover:text-paper focus-visible:-outline-offset-2"
     >
       {/* Viewport-tall so the wave fills the gap between the name and the year on screen. */}
       <span className="sticky top-0 flex h-[calc(100dvh-88px)] flex-col items-center">
