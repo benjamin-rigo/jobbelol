@@ -112,24 +112,47 @@ function ImagePairs({ onApply, onAutoAssign }: { onApply: (kind: Kind, pair: Pai
 }
 
 
-type Texture = { grain: boolean; useImage: boolean; image: string | null; opacity: number; blend: string; size: number }
+type Texture = {
+  grain: boolean
+  library: string[]
+  assign: Partial<Record<Kind, number | null>>
+  opacity: number
+  blend: string
+  size: number
+}
 
 const TEXTURE_STORAGE = 'jobbelol:tervezo:textura'
-const DEFAULT_TEXTURE: Texture = { grain: true, useImage: false, image: null, opacity: 0.2, blend: 'overlay', size: 160 }
+const DEFAULT_TEXTURE: Texture = { grain: true, library: [], assign: {}, opacity: 0.2, blend: 'overlay', size: 160 }
 const BLENDS = ['overlay', 'soft-light', 'multiply', 'screen']
 
 const GRAIN_SIZE = '160px'
 
 function textureVars(t: Texture): Record<string, string> {
-  const layers: [string, string][] = []
-  if (t.grain) layers.push(['var(--card-texture-noise)', GRAIN_SIZE])
-  if (t.useImage && t.image) layers.push([`url(${t.image})`, `${t.size}px`])
-  return {
-    '--card-texture': layers.map(([image]) => image).join(', ') || 'none',
-    '--card-texture-size': layers.map(([, size]) => size).join(', ') || GRAIN_SIZE,
-    '--card-texture-opacity': String(t.opacity),
-    '--card-texture-blend': t.blend,
+  const vars: Record<string, string> = { '--card-texture-opacity': String(t.opacity), '--card-texture-blend': t.blend }
+  for (const k of KINDS) {
+    const layers: [string, string][] = []
+    if (t.grain) layers.push(['var(--card-texture-noise)', GRAIN_SIZE])
+    const image = t.library[t.assign[k.id] ?? -1]
+    if (image) layers.push([`url(${image})`, `${t.size}px`])
+    vars[`--texture-${k.id}`] = layers.map(([i]) => i).join(', ') || 'none'
+    vars[`--texture-size-${k.id}`] = layers.map(([, size]) => size).join(', ') || GRAIN_SIZE
   }
+  return vars
+}
+
+function loadTexture(): Texture {
+  const saved = JSON.parse(localStorage.getItem(TEXTURE_STORAGE) ?? '{}')
+  if ('image' in saved) {
+    saved.library = saved.image ? [saved.image] : []
+    saved.assign = saved.image && saved.useImage ? Object.fromEntries(KINDS.map((k) => [k.id, 0])) : {}
+  }
+  return { ...DEFAULT_TEXTURE, ...saved }
+}
+
+// Distinct textures per category while the library allows it, then repeats.
+function randomAssign(count: number): Texture['assign'] {
+  const order = Array.from({ length: count }, (_, i) => i).sort(() => Math.random() - 0.5)
+  return Object.fromEntries(KINDS.map((k, i) => [k.id, count ? order[i % count] : null]))
 }
 
 async function shrinkImage(file: File, max = 512) {
@@ -150,70 +173,130 @@ async function shrinkImage(file: File, max = 512) {
 }
 
 function TexturePanel({ texture, onChange }: { texture: Texture; onChange: (t: Texture) => void }) {
-  const upload = async (file: File | undefined) => {
-    if (!file?.type.startsWith('image/')) return
-    onChange({ ...texture, useImage: true, image: await shrinkImage(file) })
+  const upload = async (files: FileList | null) => {
+    const images = [...(files ?? [])].filter((f) => f.type.startsWith('image/'))
+    if (!images.length) return
+    onChange({ ...texture, library: [...texture.library, ...(await Promise.all(images.map((f) => shrinkImage(f))))] })
   }
-  const toggle = (key: 'grain' | 'useImage', label: string) => (
-    <button
-      type="button"
-      aria-pressed={texture[key]}
-      onClick={() => onChange({ ...texture, [key]: !texture[key] })}
-      className={`min-h-8 flex-1 rounded-lg px-2 font-mono text-[11px] ${texture[key] ? 'bg-paper text-frame' : 'bg-cell hover:bg-raised'}`}
-    >
-      {label}
-    </button>
-  )
-  const active = texture.grain || (texture.useImage && texture.image)
+
+  const remove = (index: number) => {
+    const assign = Object.fromEntries(
+      Object.entries(texture.assign).map(([k, v]) => [k, v === index ? null : v != null && v > index ? v - 1 : v]),
+    )
+    onChange({ ...texture, library: texture.library.filter((_, i) => i !== index), assign })
+  }
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl bg-cell/40 p-4">
-      <h2 className="font-mono text-xs text-muted">Textúra</h2>
-      <div className="flex gap-2">
-        {toggle('grain', 'Szemcse')}
-        {toggle('useImage', 'Saját kép')}
-      </div>
-      {texture.useImage && (
-        <label
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault()
-            upload(e.dataTransfer.files[0])
-          }}
-          className="flex min-h-16 cursor-pointer items-center justify-center gap-4 rounded-2xl bg-frame p-4 text-center text-xs text-muted"
-        >
-          {texture.image && <img src={texture.image} alt="" className="h-12 w-12 rounded-lg object-cover" />}
-          <span>{texture.image ? 'Másik textúra: húzd ide vagy kattints' : 'Húzz ide egy textúraképet, vagy kattints'}</span>
-          <input type="file" accept="image/*" className="sr-only" onChange={(e) => upload(e.target.files?.[0])} />
-        </label>
-      )}
-      {active && (
+      <h2 className="font-mono text-xs text-muted">Textúrák</h2>
+      <button
+        type="button"
+        aria-pressed={texture.grain}
+        onClick={() => onChange({ ...texture, grain: !texture.grain })}
+        className={`min-h-8 rounded-lg px-2 font-mono text-[11px] ${texture.grain ? 'bg-paper text-frame' : 'bg-cell hover:bg-raised'}`}
+      >
+        Szemcse minden kártyán
+      </button>
+
+      <label
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault()
+          upload(e.dataTransfer.files)
+        }}
+        className="flex min-h-16 cursor-pointer items-center justify-center rounded-2xl bg-frame p-4 text-center text-xs text-muted"
+      >
+        Húzz ide textúraképeket (többet is), vagy kattints
+        <input type="file" accept="image/*" multiple className="sr-only" onChange={(e) => upload(e.target.files)} />
+      </label>
+
+      {texture.library.length > 0 && (
         <>
-          <label className="flex items-center gap-4 font-mono text-[11px] text-muted">
-            <span className="w-16">Erősség</span>
-            <input type="range" min={0} max={1} step={0.01} value={texture.opacity} onChange={(e) => onChange({ ...texture, opacity: Number(e.target.value) })} className="flex-1" />
-            <span className="w-8 text-right">{Math.round(texture.opacity * 100)}%</span>
-          </label>
-          <label className="flex items-center gap-4 font-mono text-[11px] text-muted">
-            <span className="w-16">Képméret</span>
-            <input type="range" min={32} max={512} step={16} disabled={!texture.useImage} value={texture.size} onChange={(e) => onChange({ ...texture, size: Number(e.target.value) })} className="flex-1" />
-            <span className="w-8 text-right">{texture.size}</span>
-          </label>
-          <div className="flex gap-2">
-            {BLENDS.map((b) => (
-              <button
-                key={b}
-                type="button"
-                aria-pressed={texture.blend === b}
-                onClick={() => onChange({ ...texture, blend: b })}
-                className={`min-h-8 flex-1 rounded-lg px-2 font-mono text-[10px] ${texture.blend === b ? 'bg-paper text-frame' : 'bg-cell hover:bg-raised'}`}
-              >
-                {b}
-              </button>
+          <div className="grid grid-cols-4 gap-2">
+            {texture.library.map((src, i) => (
+              <div key={i} className="group relative">
+                <img
+                  src={src}
+                  alt={`Textúra ${i + 1}`}
+                  draggable
+                  onDragStart={(e) => e.dataTransfer.setData('application/x-texture', String(i))}
+                  className="aspect-square w-full cursor-grab rounded-lg object-cover active:cursor-grabbing"
+                />
+                <button
+                  type="button"
+                  aria-label={`Textúra ${i + 1} törlése`}
+                  onClick={() => remove(i)}
+                  className="absolute top-1 right-1 grid size-4 place-items-center rounded-full bg-frame text-[10px] opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                >
+                  ×
+                </button>
+              </div>
             ))}
           </div>
+          <p className="text-xs text-muted">Húzz egy textúrát egy kategóriára vagy kártyára.</p>
+          <button
+            type="button"
+            onClick={() => onChange({ ...texture, assign: randomAssign(texture.library.length) })}
+            className="min-h-8 rounded-lg bg-paper px-4 font-mono text-[11px] text-frame hover:opacity-80"
+          >
+            Véletlen kiosztás
+          </button>
         </>
       )}
+
+      <label className="flex items-center gap-4 font-mono text-[11px] text-muted">
+        <span className="w-16">Erősség</span>
+        <input type="range" min={0} max={1} step={0.01} value={texture.opacity} onChange={(e) => onChange({ ...texture, opacity: Number(e.target.value) })} className="flex-1" />
+        <span className="w-8 text-right">{Math.round(texture.opacity * 100)}%</span>
+      </label>
+      <label className="flex items-center gap-4 font-mono text-[11px] text-muted">
+        <span className="w-16">Képméret</span>
+        <input type="range" min={32} max={512} step={16} value={texture.size} onChange={(e) => onChange({ ...texture, size: Number(e.target.value) })} className="flex-1" />
+        <span className="w-8 text-right">{texture.size}</span>
+      </label>
+      <div className="flex gap-2">
+        {BLENDS.map((b) => (
+          <button
+            key={b}
+            type="button"
+            aria-pressed={texture.blend === b}
+            onClick={() => onChange({ ...texture, blend: b })}
+            className={`min-h-8 flex-1 rounded-lg px-2 font-mono text-[10px] ${texture.blend === b ? 'bg-paper text-frame' : 'bg-cell hover:bg-raised'}`}
+          >
+            {b}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function TexturePicker({ texture, kind, onChange }: { texture: Texture; kind: Kind; onChange: (t: Texture) => void }) {
+  if (!texture.library.length) return null
+  const current = texture.assign[kind] ?? null
+  const pick = (i: number | null) => onChange({ ...texture, assign: { ...texture.assign, [kind]: i } })
+  return (
+    <div className="flex flex-wrap items-center gap-1">
+      <button
+        type="button"
+        aria-pressed={current === null}
+        onClick={() => pick(null)}
+        className={`size-8 rounded-lg font-mono text-[10px] ${current === null ? 'bg-paper text-frame' : 'bg-cell text-muted hover:bg-raised'}`}
+      >
+        –
+      </button>
+      {texture.library.map((src, i) => (
+        <button
+          key={i}
+          type="button"
+          aria-label={`Textúra ${i + 1}`}
+          aria-pressed={current === i}
+          onClick={() => pick(i)}
+          className={`size-8 overflow-hidden rounded-lg ${current === i ? 'outline-2 outline-offset-1 outline-paper' : 'opacity-60 hover:opacity-100'}`}
+        >
+          <img src={src} alt="" className="size-full object-cover" />
+        </button>
+      ))}
     </div>
   )
 }
@@ -260,18 +343,14 @@ export function Tervezo() {
   }, [colors])
 
   const [adjusted, setAdjusted] = useState<Record<string, boolean>>({})
-  const [texture, setTexture] = useState<Texture>(() => {
-    const saved = JSON.parse(localStorage.getItem(TEXTURE_STORAGE) ?? '{}')
-    if ('source' in saved) Object.assign(saved, { grain: saved.source === 'noise', useImage: saved.source === 'custom' })
-    return { ...DEFAULT_TEXTURE, ...saved }
-  })
+  const [texture, setTexture] = useState<Texture>(loadTexture)
 
   useEffect(() => {
     for (const [k, v] of Object.entries(textureVars(texture))) document.documentElement.style.setProperty(k, v)
     try {
       localStorage.setItem(TEXTURE_STORAGE, JSON.stringify(texture))
     } catch {
-      localStorage.setItem(TEXTURE_STORAGE, JSON.stringify({ ...texture, image: null }))
+      localStorage.setItem(TEXTURE_STORAGE, JSON.stringify({ ...texture, library: [], assign: {} }))
     }
   }, [texture])
   const [past, setPast] = useState<Record<string, string>[]>([])
@@ -342,6 +421,13 @@ export function Tervezo() {
     setAdjusted({})
   }
   const [dropTarget, setDropTarget] = useState<Kind | null>(null)
+
+  const dropOn = (kind: Kind, data: DataTransfer) => {
+    const pair = data.getData('application/x-pair')
+    const tex = data.getData('application/x-texture')
+    if (pair) applyPair(kind, JSON.parse(pair))
+    else if (tex) setTexture({ ...texture, assign: { ...texture.assign, [kind]: Number(tex) } })
+  }
   const [now] = useState(() => new Date())
 
   const samples = KINDS.map((k) => events.find((e) => e.kind === k.id && e.start >= now) ?? events.find((e) => e.kind === k.id)!)
@@ -404,8 +490,7 @@ export function Tervezo() {
               onDrop={(e) => {
                 e.preventDefault()
                 setDropTarget(null)
-                const data = e.dataTransfer.getData('application/x-pair')
-                if (data) applyPair(k.id, JSON.parse(data))
+                dropOn(k.id, e.dataTransfer)
               }}
               className={`flex flex-col gap-2 rounded-2xl p-4 transition-colors duration-150 ${dropTarget === k.id ? 'bg-raised' : 'bg-cell/40'}`}
             >
@@ -415,6 +500,7 @@ export function Tervezo() {
               </div>
               <ColorField label="Háttér" value={colors[`k-${k.id}`]} adjusted={!!adjusted[`k-${k.id}`]} onChange={set(`k-${k.id}`)} />
               <ColorField label="Szöveg" value={colors[`k-${k.id}-ink`]} adjusted={!!adjusted[`k-${k.id}-ink`]} onChange={set(`k-${k.id}-ink`)} />
+              <TexturePicker texture={texture} kind={k.id} onChange={setTexture} />
             </div>
           ))}
         </section>
@@ -430,11 +516,10 @@ export function Tervezo() {
           onDragLeave={() => setDropTarget(null)}
           onDrop={(e) => {
             const kind = (e.target as HTMLElement).closest<HTMLElement>('[data-kind]')?.dataset.kind as Kind | undefined
-            const data = e.dataTransfer.getData('application/x-pair')
             setDropTarget(null)
-            if (!kind || !data) return
+            if (!kind) return
             e.preventDefault()
-            applyPair(kind, JSON.parse(data))
+            dropOn(kind, e.dataTransfer)
           }}
         >
           {dropTarget && <style>{`article[data-kind="${dropTarget}"] { outline: 2px solid var(--color-paper); outline-offset: 2px; }`}</style>}

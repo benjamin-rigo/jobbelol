@@ -15,11 +15,16 @@ type Props = {
 const cardColor = Object.fromEntries(KINDS.map((k) => [k.id, k.card]))
 
 // Stable per-event pseudo-random texture placement, so every card looks like its own print.
-function textureStyle(id: string) {
+function textureStyle(id: string, kind: Kind) {
   let hash = 0
   for (const ch of id) hash = (hash * 31 + ch.charCodeAt(0)) | 0
   const n = Math.abs(hash)
-  return { '--texture-rotate': `${n % 360}deg`, '--texture-shift': `${(n >> 9) % 100}% ${(n >> 17) % 100}%` } as CSSProperties
+  return {
+    '--texture-rotate': `${n % 360}deg`,
+    '--texture-shift': `${(n >> 9) % 100}% ${(n >> 17) % 100}%`,
+    '--card-texture': `var(--texture-${kind}, var(--card-texture-default))`,
+    '--card-texture-size': `var(--texture-size-${kind}, var(--card-texture-size-default))`,
+  } as CSSProperties
 }
 
 export function EventTile({ event, now, saved, onKind, onSave }: Props) {
@@ -33,7 +38,7 @@ export function EventTile({ event, now, saved, onKind, onSave }: Props) {
   return (
     <article
       data-kind={event.kind}
-      style={textureStyle(event.id)}
+      style={textureStyle(event.id, event.kind)}
       onMouseEnter={on}
       onMouseLeave={off}
       onFocus={on}
