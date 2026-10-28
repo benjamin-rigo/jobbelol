@@ -99,7 +99,7 @@ export function ColorField({ label, value, adjusted, onChange }: { label: string
         className="w-20 rounded-lg bg-cell px-2 py-2 text-paper"
       />
       <span className="text-muted">{label}</span>
-      {adjusted && <span className="ml-auto text-muted">kontraszt miatt korrigálva</span>}
+      {adjusted && <span className="ml-auto text-muted">igazítva a kontraszthoz</span>}
     </label>
   )
 }
@@ -122,10 +122,19 @@ export function Tervezo() {
 
   const [adjusted, setAdjusted] = useState<Record<string, boolean>>({})
 
+  // The edited color stays as chosen; its partners shift lightness to keep contrast.
   const set = (token: string) => (value: string) => {
-    const fixed = enforce(token, value, colors)
-    setColors({ ...colors, [token]: fixed })
-    setAdjusted({ ...adjusted, [token]: fixed !== value })
+    const next = { ...colors, [token]: value }
+    const marks: Record<string, boolean> = { [token]: false }
+    for (const partner of partners(token)) {
+      const fixed = enforce(partner, next[partner], next)
+      marks[partner] = fixed !== next[partner]
+      next[partner] = fixed
+    }
+    next[token] = enforce(token, value, next)
+    marks[token] = next[token] !== value
+    setColors(next)
+    setAdjusted({ ...adjusted, ...marks })
   }
   const [now] = useState(() => new Date())
 
