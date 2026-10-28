@@ -3,7 +3,9 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import { DayColumn } from '@/components/DayColumn'
 import { EventTile } from '@/components/EventTile'
-import { KINDS, dayKey, events } from '@/lib/events'
+import { MIN_CONTRAST, contrast, fitLightness, isHex } from '@/lib/color'
+import { KINDS, dayKey, events, type Kind } from '@/lib/events'
+import { pairsFromImage, type Pair } from '@/lib/palette'
 
 const STORAGE = 'jobbelol:tervezo'
 
@@ -21,62 +23,92 @@ function readDefaults() {
   return Object.fromEntries(ALL_TOKENS.map((t) => [t, style.getPropertyValue(`--color-${t}`).trim()]))
 }
 
-function luminance(hex: string) {
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b
-}
-
-function contrast(a: string, b: string) {
-  const [x, y] = [luminance(a), luminance(b)].sort((p, q) => q - p)
-  return (x + 0.05) / (y + 0.05)
-}
-
-const isHex = (v: string) => /^#[0-9a-f]{6}$/i.test(v)
-
-const MIN_CONTRAST = 4.5
-
 function partners(token: string): string[] {
   if (token === 'paper' || token === 'muted') return ['cell', 'frame']
   if (token === 'cell' || token === 'frame') return ['paper', 'muted']
   return [token.endsWith('-ink') ? token.slice(0, -4) : `${token}-ink`]
 }
 
-function toHsl(hex: string): [number, number, number] {
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
-  const max = Math.max(r, g, b)
-  const min = Math.min(r, g, b)
-  const l = (max + min) / 2
-  if (max === min) return [0, 0, l]
-  const d = max - min
-  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
-  const h = max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4
-  return [h / 6, s, l]
+const enforce = (token: string, value: string, colors: Record<string, string>) =>
+  fitLightness(value, partners(token).map((t) => colors[t]).filter(isHex))
+
+// Busiest categories first, so auto-assign gives them the image's strongest pairs.
+const KINDS_BY_SIZE = [...KINDS].sort((a, b) => events.filter((e) => e.kind === b.id).length - events.filter((e) => e.kind === a.id).length)
+
+function PairSwatch({ pair, onApply }: { pair: Pair; onApply: (kind: Kind) => void }) {
+  return (
+    <div
+      draggable
+      onDragStart={(e) => e.dataTransfer.setData('application/x-pair', JSON.stringify(pair))}
+      className="flex cursor-grab flex-col gap-2 rounded-2xl p-2 active:cursor-grabbing"
+      style={{ background: pair.bg, color: pair.ink }}
+    >
+      <span className="text-2xl leading-none">Aa</span>
+      <span className="font-mono text-[10px]">{contrast(pair.bg, pair.ink).toFixed(1)}:1</span>
+      <select
+        aria-label="Pár alkalmazása kategóriára"
+        value=""
+        onChange={(e) => onApply(e.target.value as Kind)}
+        className="rounded bg-frame/40 font-mono text-[10px]"
+        style={{ color: pair.ink }}
+      >
+        <option value="">ide…</option>
+        {KINDS.map((k) => (
+          <option key={k.id} value={k.id}>
+            {k.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
 }
 
-function toHex(h: number, s: number, l: number) {
-  const f = (n: number) => {
-    const k = (n + h * 12) % 12
-    const a = s * Math.min(l, 1 - l)
-    const c = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))
-    return Math.round(c * 255).toString(16).padStart(2, '0')
-  }
-  return `#${f(0)}${f(8)}${f(4)}`
-}
+function ImagePairs({ onApply, onAutoAssign }: { onApply: (kind: Kind, pair: Pair) => void; onAutoAssign: (pairs: Pair[]) => void }) {
+  const [pairs, setPairs] = useState<Pair[]>([])
+  const [preview, setPreview] = useState<string | null>(null)
+  const [over, setOver] = useState(false)
 
-// Nudges lightness the shortest way until the color clears MIN_CONTRAST against every partner.
-function enforce(token: string, value: string, colors: Record<string, string>) {
-  const others = partners(token).map((t) => colors[t]).filter(isHex)
-  const ok = (hex: string) => others.every((o) => contrast(hex, o) >= MIN_CONTRAST)
-  if (ok(value)) return value
-  const [h, s, l] = toHsl(value)
-  for (let step = 0.01; step <= 1; step += 0.01) {
-    for (const candidate of [l - step, l + step]) {
-      if (candidate < 0 || candidate > 1) continue
-      const hex = toHex(h, s, candidate)
-      if (ok(hex)) return hex
-    }
+  const load = async (file: File | undefined) => {
+    if (!file?.type.startsWith('image/')) return
+    setPreview(URL.createObjectURL(file))
+    setPairs(await pairsFromImage(file))
   }
-  return value
+
+  return (
+    <div className="flex flex-col gap-4 rounded-2xl bg-cell/40 p-4">
+      <h2 className="font-mono text-xs text-muted">Párok képből</h2>
+      <label
+        onDragOver={(e) => {
+          e.preventDefault()
+          setOver(true)
+        }}
+        onDragLeave={() => setOver(false)}
+        onDrop={(e) => {
+          e.preventDefault()
+          setOver(false)
+          load(e.dataTransfer.files[0])
+        }}
+        className={`flex min-h-24 cursor-pointer items-center justify-center gap-4 overflow-hidden rounded-2xl p-4 text-center text-xs text-muted transition-colors duration-150 ${over ? 'bg-raised' : 'bg-frame'}`}
+      >
+        {preview && <img src={preview} alt="" className="h-16 w-auto rounded-lg" />}
+        <span>{preview ? 'Másik kép: húzd ide vagy kattints' : 'Húzz ide egy képet, vagy kattints'}</span>
+        <input type="file" accept="image/*" className="sr-only" onChange={(e) => load(e.target.files?.[0])} />
+      </label>
+      {pairs.length > 0 && (
+        <>
+          <div className="grid grid-cols-4 gap-2">
+            {pairs.map((p) => (
+              <PairSwatch key={p.bg + p.ink} pair={p} onApply={(kind) => onApply(kind, p)} />
+            ))}
+          </div>
+          <p className="text-xs text-muted">Húzz egy párt egy kategóriára, vagy válaszd ki alatta, hová kerüljön.</p>
+          <button type="button" onClick={() => onAutoAssign(pairs)} className="min-h-8 rounded-lg bg-paper px-4 font-mono text-[11px] text-frame hover:opacity-80">
+            Automatikus kiosztás
+          </button>
+        </>
+      )}
+    </div>
+  )
 }
 
 export function ColorField({ label, value, adjusted, onChange }: { label: string; value: string; adjusted: boolean; onChange: (v: string) => void }) {
@@ -107,7 +139,7 @@ export function ColorField({ label, value, adjusted, onChange }: { label: string
 export function Ratio({ a, b }: { a: string; b: string }) {
   if (!isHex(a) || !isHex(b)) return null
   const r = contrast(a, b)
-  return <span className={`rounded-full px-2 py-0.5 font-mono text-[11px] ${r >= 4.5 ? 'bg-cell text-paper' : 'bg-[#8a173f] text-white'}`}>{r.toFixed(2)}:1 {r >= 4.5 ? 'AA' : 'kevés'}</span>
+  return <span className={`rounded-full px-2 py-0.5 font-mono text-[11px] ${r >= MIN_CONTRAST ? 'bg-cell text-paper' : 'bg-[#8a173f] text-white'}`}>{r.toFixed(2)}:1 {r >= MIN_CONTRAST ? 'AA' : 'kevés'}</span>
 }
 
 export function Tervezo() {
@@ -136,6 +168,12 @@ export function Tervezo() {
     setColors(next)
     setAdjusted({ ...adjusted, ...marks })
   }
+  const applyPair = (kind: Kind, pair: Pair) => {
+    setColors((c) => ({ ...c, [`k-${kind}`]: pair.bg, [`k-${kind}-ink`]: fitLightness(pair.ink, [pair.bg]) }))
+    setAdjusted((a) => ({ ...a, [`k-${kind}`]: false, [`k-${kind}-ink`]: false }))
+  }
+  const autoAssign = (pairs: Pair[]) => KINDS_BY_SIZE.forEach((k, i) => pairs[i] && applyPair(k.id, pairs[i]))
+  const [dropTarget, setDropTarget] = useState<Kind | null>(null)
   const [now] = useState(() => new Date())
 
   const samples = KINDS.map((k) => events.find((e) => e.kind === k.id && e.start >= now) ?? events.find((e) => e.kind === k.id)!)
@@ -171,6 +209,8 @@ export function Tervezo() {
 
       <div className="grid gap-8 lg:grid-cols-[384px_1fr]">
         <section className="flex flex-col gap-6">
+          <ImagePairs onApply={applyPair} onAutoAssign={autoAssign} />
+
           <div className="flex flex-col gap-2 rounded-2xl bg-cell/40 p-4">
             <h2 className="mb-2 font-mono text-xs text-muted">Alapszínek</h2>
             {BASE.map((b) => (
@@ -179,7 +219,21 @@ export function Tervezo() {
           </div>
 
           {KINDS.map((k) => (
-            <div key={k.id} className="flex flex-col gap-2 rounded-2xl bg-cell/40 p-4">
+            <div
+              key={k.id}
+              onDragOver={(e) => {
+                e.preventDefault()
+                setDropTarget(k.id)
+              }}
+              onDragLeave={() => setDropTarget(null)}
+              onDrop={(e) => {
+                e.preventDefault()
+                setDropTarget(null)
+                const data = e.dataTransfer.getData('application/x-pair')
+                if (data) applyPair(k.id, JSON.parse(data))
+              }}
+              className={`flex flex-col gap-2 rounded-2xl p-4 transition-colors duration-150 ${dropTarget === k.id ? 'bg-raised' : 'bg-cell/40'}`}
+            >
               <div className="mb-2 flex items-center justify-between">
                 <h2 className="text-sm">{k.label}</h2>
                 <Ratio a={colors[`k-${k.id}`]} b={colors[`k-${k.id}-ink`]} />
