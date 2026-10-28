@@ -429,6 +429,11 @@ export function Tervezo() {
   }
   const withPair = (c: Record<string, string>, kind: Kind, pair: Pair) => ({ ...c, [`k-${kind}`]: pair.bg, [`k-${kind}-ink`]: fitLightness(pair.ink, [pair.bg]) })
 
+  const swapPair = (kind: Kind) => {
+    commit({ ...colors, [`k-${kind}`]: colors[`k-${kind}-ink`], [`k-${kind}-ink`]: colors[`k-${kind}`] })
+    setAdjusted({ ...adjusted, [`k-${kind}`]: false, [`k-${kind}-ink`]: false })
+  }
+
   const applyPair = (kind: Kind, pair: Pair) => {
     commit(withPair(colors, kind, pair))
     setAdjusted({ ...adjusted, [`k-${kind}`]: false, [`k-${kind}-ink`]: false })
@@ -514,7 +519,22 @@ export function Tervezo() {
             >
               <div className="mb-2 flex items-center justify-between">
                 <h2 className="text-sm">{k.label}</h2>
-                <Ratio a={colors[`k-${k.id}`]} b={colors[`k-${k.id}-ink`]} />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => swapPair(k.id)}
+                    aria-label={`${k.label}: háttér és szöveg felcserélése`}
+                    title="Háttér és szöveg felcserélése"
+                    className="flex min-h-8 items-center gap-2 rounded-lg bg-cell px-2 font-mono text-[11px] hover:bg-raised"
+                  >
+                    <span aria-hidden className="flex">
+                      <span className="size-3 rounded-full" style={{ background: colors[`k-${k.id}`] }} />
+                      <span className="-ml-1 size-3 rounded-full" style={{ background: colors[`k-${k.id}-ink`] }} />
+                    </span>
+                    ⇄
+                  </button>
+                  <Ratio a={colors[`k-${k.id}`]} b={colors[`k-${k.id}-ink`]} />
+                </div>
               </div>
               <ColorField label="Háttér" value={colors[`k-${k.id}`]} adjusted={!!adjusted[`k-${k.id}`]} onChange={set(`k-${k.id}`)} />
               <ColorField label="Szöveg" value={colors[`k-${k.id}-ink`]} adjusted={!!adjusted[`k-${k.id}-ink`]} onChange={set(`k-${k.id}-ink`)} />
