@@ -11,10 +11,10 @@ type Props<T> = {
   rainbow?: boolean
 }
 
-// All category card colors around the border; the fill sits on top via padding-box.
+// Category card colors around the border (buli uses its ink, its card is near-black); the fill sits on top via padding-box.
 const RAINBOW = {
   background:
-    'linear-gradient(var(--fill), var(--fill)) padding-box, conic-gradient(var(--color-k-koncert), var(--color-k-buli), var(--color-k-komolyzene), var(--color-k-szinpad), var(--color-k-gyerek), var(--color-k-egyeb), var(--color-k-koncert)) border-box',
+    'linear-gradient(var(--fill), var(--fill)) padding-box, conic-gradient(var(--color-k-koncert), var(--color-k-buli-ink), var(--color-k-komolyzene), var(--color-k-szinpad), var(--color-k-gyerek), var(--color-k-egyeb), var(--color-k-koncert)) border-box',
 }
 
 export function Dropdown<T extends string | null>({ label, value, options, onChange, className = '', rainbow = false }: Props<T>) {
