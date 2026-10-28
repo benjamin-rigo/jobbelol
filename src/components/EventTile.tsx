@@ -28,7 +28,7 @@ export function EventTile({ event, now, saved, onKind, onSave }: Props) {
       onMouseLeave={off}
       onFocus={on}
       onBlur={off}
-      className={`group relative flex h-tile shrink-0 flex-col rounded-2xl px-4 py-4 transition-[filter] duration-150 hover:brightness-110 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:-outline-offset-4 has-[a:focus-visible]:outline-current ${cardColor[event.kind]}`}>
+      className={`group relative flex h-tile shrink-0 flex-col rounded-2xl px-4 py-4 transition-colors duration-150 hover:bg-frame hover:text-paper has-[a:focus-visible]:outline-2 has-[a:focus-visible]:-outline-offset-4 has-[a:focus-visible]:outline-current ${cardColor[event.kind]}`}>
       <div className="flex items-baseline gap-2 font-mono text-[11px]">
         <time dateTime={event.start.toISOString()} className="whitespace-nowrap">
           {formatTime(event.start)}
