@@ -44,7 +44,7 @@ export default function App() {
     <div className="flex h-dvh flex-col">
       <header className="relative z-40 flex items-center gap-2 bg-frame px-4 pt-4 pb-2">
         <h1 className="shrink-0 sm:mr-4">
-          <img src="/logo.svg" alt="Jobb elöl" className="h-8 w-auto" />
+          <img src="/logo.svg" alt="Jobb elöl" className="h-12 w-auto" />
         </h1>
         <KindSelect kind={kind} onKind={setKind} className="ml-auto hidden w-48 xl:block" />
         <VenueSelect venue={venue} venues={venues} onVenue={setVenue} className="hidden w-48 xl:block" />
