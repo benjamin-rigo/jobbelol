@@ -55,8 +55,20 @@
 @layer base {
   :root {
     --card-texture-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
-    --card-texture-default: var(--card-texture-noise), url("/textura.jpg");
-    --card-texture-size-default: 160px, 336px;
+    --card-texture-default: var(--card-texture-noise);
+    --card-texture-size-default: 160px;
+    --texture-buli: var(--card-texture-noise), url("/textures/karcolt-fem.jpg");
+    --texture-koncert: var(--card-texture-noise), url("/textures/orveny-firka.jpg");
+    --texture-komolyzene: var(--card-texture-noise), url("/textures/szenrajz.jpg");
+    --texture-szinpad: var(--card-texture-noise), url("/textures/pontozas.jpg");
+    --texture-gyerek: var(--card-texture-noise), url("/textures/suru-firka.jpg");
+    --texture-egyeb: var(--card-texture-noise), url("/textures/szenpor.jpg");
+    --texture-size-buli: 160px, 336px;
+    --texture-size-koncert: 160px, 336px;
+    --texture-size-komolyzene: 160px, 336px;
+    --texture-size-szinpad: 160px, 336px;
+    --texture-size-gyerek: 160px, 336px;
+    --texture-size-egyeb: 160px, 336px;
     --card-texture-opacity: 0.47;
     --card-texture-blend: soft-light;
   }

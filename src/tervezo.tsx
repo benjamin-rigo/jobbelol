@@ -122,7 +122,16 @@ type Texture = {
 }
 
 const TEXTURE_STORAGE = 'jobbelol:tervezo:textura'
-const DEFAULT_TEXTURE: Texture = { grain: true, library: [], assign: {}, opacity: 0.2, blend: 'overlay', size: 160 }
+// Mirrors the defaults in src/index.css.
+const PROJECT_TEXTURES = ['karcolt-fem', 'orveny-firka', 'szenrajz', 'pontozas', 'suru-firka', 'szenpor'].map((n) => `/textures/${n}.jpg`)
+const DEFAULT_TEXTURE: Texture = {
+  grain: true,
+  library: PROJECT_TEXTURES,
+  assign: { buli: 0, koncert: 1, komolyzene: 2, szinpad: 3, gyerek: 4, egyeb: 5 },
+  opacity: 0.47,
+  blend: 'soft-light',
+  size: 336,
+}
 const BLENDS = ['overlay', 'soft-light', 'multiply', 'screen']
 
 const GRAIN_SIZE = '160px'
@@ -146,7 +155,16 @@ function loadTexture(): Texture {
     saved.library = saved.image ? [saved.image] : []
     saved.assign = saved.image && saved.useImage ? Object.fromEntries(KINDS.map((k) => [k.id, 0])) : {}
   }
-  return { ...DEFAULT_TEXTURE, ...saved }
+  const texture: Texture = { ...DEFAULT_TEXTURE, ...saved }
+  // Project textures are always in the library, first; saved assignments shift past them.
+  const missing = PROJECT_TEXTURES.filter((t) => !texture.library.includes(t))
+  if (!missing.length) return texture
+  const shift = (i: number | null | undefined) => (i == null ? i : i + missing.length)
+  return {
+    ...texture,
+    library: [...missing, ...texture.library],
+    assign: Object.fromEntries(Object.entries(texture.assign).map(([k, v]) => [k, shift(v)])),
+  }
 }
 
 // Distinct textures per category while the library allows it, then repeats.
