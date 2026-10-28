@@ -11,7 +11,7 @@ export function KindTag({ kind, onSelect }: Props) {
       type="button"
       aria-label={`Szűrés: ${labels[kind]}`}
       onClick={onSelect}
-      className="relative z-10 font-sans text-xs text-muted hover:text-paper transition-colors duration-150"
+      className="relative z-10 rounded-full bg-paper px-2 py-0.5 font-sans text-[11px] leading-tight font-medium text-frame transition-opacity duration-150 hover:opacity-80"
     >
       {labels[kind].toLowerCase()}
     </button>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { formatTime, type CalendarEvent, type Kind } from '@/lib/events'
+import { externalLink } from '@/lib/links'
 import { KindTag } from './KindTag'
 import { Marquee } from './Marquee'
 
@@ -14,6 +15,7 @@ type Props = {
 export function EventTile({ event, now, saved, onKind, onSave }: Props) {
   const live = event.start <= now && event.end !== null && now < event.end
   const place = event.stage ? `${event.venue}, ${event.stage}` : event.venue
+  const cancelled = /\belmarad/i.test(event.title)
   const [active, setActive] = useState(false)
   const on = () => setActive(true)
   const off = () => setActive(false)
@@ -36,10 +38,8 @@ export function EventTile({ event, now, saved, onKind, onSave }: Props) {
         </span>
       </div>
       <a
-        href={event.url ?? undefined}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-2 line-clamp-2 text-[17px] leading-snug outline-none after:absolute after:inset-0"
+        {...externalLink(event.url)}
+        className={`mt-2 line-clamp-2 text-[17px] leading-snug outline-none after:absolute after:inset-0 ${cancelled ? 'text-muted line-through' : ''}`}
       >
         {event.title}
       </a>

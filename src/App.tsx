@@ -23,7 +23,8 @@ export default function App() {
       (e) => (!kind || e.kind === kind) && (!venue || e.venue === venue) && (e.end ?? e.start) >= now,
     )
     const byDay = Map.groupBy(visible, (e) => (e.start < now ? today : dayKey(e.start)))
-    return dayRange(now, events[events.length - 1].start).map((key) => ({ key, events: byDay.get(key) ?? [] }))
+    const all = dayRange(now, events[events.length - 1].start).map((key) => ({ key, events: byDay.get(key) ?? [] }))
+    return kind || venue ? all.filter((d) => d.events.length > 0) : all
   }, [kind, venue, now, today])
 
   const [saved, toggleSaved] = useSaved()
@@ -41,7 +42,7 @@ export default function App() {
 
   return (
     <div className="flex h-dvh flex-col">
-      <header className="relative z-40 flex items-center gap-2 bg-frame px-4 py-2">
+      <header className="relative z-40 flex items-center gap-2 bg-frame px-4 pt-4 pb-2">
         <h1 className="shrink-0 text-base leading-none font-medium tracking-tight sm:mr-4">Jobb elöl</h1>
         <KindSelect kind={kind} onKind={setKind} className="ml-auto hidden w-48 xl:block" />
         <VenueSelect venue={venue} venues={venues} onVenue={setVenue} className="hidden w-48 xl:block" />

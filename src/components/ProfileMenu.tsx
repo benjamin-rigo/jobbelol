@@ -1,4 +1,5 @@
 import { describeDay, dayKey, formatTime, type CalendarEvent } from '@/lib/events'
+import { externalLink } from '@/lib/links'
 
 type Props = { saved: CalendarEvent[]; onRemove: (id: string) => void }
 
@@ -21,7 +22,7 @@ export function ProfileMenu({ saved, onRemove }: Props) {
       <div
         id="profil"
         popover="auto"
-        className="fixed inset-auto top-12 right-4 m-0 max-h-[70dvh] rounded-2xl w-96 max-w-[calc(100vw-32px)] overflow-y-auto bg-frame text-paper"
+        className="fixed inset-auto top-16 right-4 m-0 max-h-[70dvh] rounded-2xl w-96 max-w-[calc(100vw-32px)] overflow-y-auto bg-frame text-paper"
       >
         <h2 className="px-4 pt-4 pb-1 font-mono text-xs text-muted">Mentett programok</h2>
         {saved.length === 0 ? (
@@ -32,7 +33,7 @@ export function ProfileMenu({ saved, onRemove }: Props) {
               const { day, month } = describeDay(dayKey(e.start))
               return (
                 <li key={e.id} className="flex items-start gap-4 rounded-lg px-4 py-4 hover:bg-cell transition-colors duration-150">
-                  <a href={e.url ?? undefined} target="_blank" rel="noopener noreferrer" className="min-w-0 flex-1">
+                  <a {...externalLink(e.url)} className="min-w-0 flex-1">
                     <span className="block font-mono text-xs text-muted">
                       {month} {day}. {formatTime(e.start)}
                     </span>
