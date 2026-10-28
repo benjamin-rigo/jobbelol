@@ -8,4 +8,9 @@ export default defineConfig({
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
   },
+  build: {
+    rollupOptions: {
+      input: { main: path.resolve(__dirname, 'index.html'), tervezo: path.resolve(__dirname, 'tervezo.html') },
+    },
+  },
 })
