@@ -22,7 +22,7 @@ export function ProfileMenu({ saved, onRemove }: Props) {
       <div
         id="profil"
         popover="auto"
-        className="fixed inset-auto top-20 right-4 m-0 max-h-[70dvh] rounded-2xl w-96 max-w-[calc(100vw-32px)] overflow-y-auto bg-frame text-paper"
+        className="fixed inset-auto top-24 right-4 m-0 max-h-[70dvh] rounded-2xl w-96 max-w-[calc(100vw-32px)] overflow-y-auto bg-frame text-paper"
       >
         <h2 className="px-4 pt-4 pb-1 font-mono text-xs text-muted">Mentett programok</h2>
         {saved.length === 0 ? (

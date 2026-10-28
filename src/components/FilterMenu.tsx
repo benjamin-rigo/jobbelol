@@ -30,7 +30,7 @@ export function FilterMenu({ kind, venue, venues, onKind, onVenue }: Props) {
       <div
         id="szurok"
         popover="auto"
-        className="fixed inset-auto top-20 right-4 m-0 w-64 rounded-2xl bg-frame p-4 text-paper"
+        className="fixed inset-auto top-24 right-4 m-0 w-64 rounded-2xl bg-frame p-4 text-paper"
       >
         <p className="font-mono text-xs text-paper">Kategória</p>
         <KindSelect kind={kind} onKind={onKind} className="mt-2 mb-6" />
