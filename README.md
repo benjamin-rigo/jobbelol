@@ -1,9 +1,11 @@
-# jobbelol — redesign
+# Jobb elöl — redesign
 
-Saját frontend a [jobbelol.hu](https://jobbelol.hu) (budapesti klubprogramok) újragondolásához.
+Budapest egy helyen: klubok, koncertek és színpadok programja egy naptárban. Saját frontend-újragondolás a [jobbelol.hu](https://jobbelol.hu) adataira.
 
-- `reference/` — az eredeti oldal SSR HTML-je, route manifest, képernyőképek
-- `src/data/clubs.snapshot.json` — `GET /api/venues/calendar/clubs` pillanatkép (2026-10-26), fejlesztéshez
+- Élő oldal: https://benjamin-rigo.github.io/jobbelol/
+- Színtervező: https://benjamin-rigo.github.io/jobbelol/tervezo.html
+
+`src/data/clubs.snapshot.json` a jobbelol.hu programadatainak pillanatképe (2026-10-26), fejlesztéshez.
 
 ```sh
 npm install

@@ -44,7 +44,7 @@ export default function App() {
     <div className="flex h-dvh flex-col">
       <header className="relative z-40 flex items-center gap-2 bg-frame pt-4 pr-4 pb-2 pl-9">
         <h1 className="shrink-0">
-          <img src="/logo.svg" alt="Jobb elöl" className="h-16 w-auto" />
+          <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="Jobb elöl" className="h-16 w-auto" />
         </h1>
         <p className="ml-4 font-display text-2xl leading-none font-extrabold text-paper sm:mr-4">Budapest egy helyen.</p>
         <KindSelect kind={kind} onKind={setKind} className="ml-auto hidden w-48 xl:block" />

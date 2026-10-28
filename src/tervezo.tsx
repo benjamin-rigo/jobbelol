@@ -123,7 +123,7 @@ type Texture = {
 
 const TEXTURE_STORAGE = 'jobbelol:tervezo:textura'
 // Mirrors the defaults in src/index.css.
-const PROJECT_TEXTURES = ['karcolt-fem', 'orveny-firka', 'szenrajz', 'pontozas', 'suru-firka', 'szenpor'].map((n) => `/textures/${n}.jpg`)
+const PROJECT_TEXTURES = ['karcolt-fem', 'orveny-firka', 'szenrajz', 'pontozas', 'suru-firka', 'szenpor'].map((n) => `${import.meta.env.BASE_URL}textures/${n}.jpg`)
 const DEFAULT_TEXTURE: Texture = {
   grain: true,
   library: PROJECT_TEXTURES,
@@ -459,7 +459,7 @@ export function Tervezo() {
   return (
     <div className="min-h-dvh bg-frame p-8 text-paper">
       <header className="mb-8 flex items-center gap-4">
-        <img src="/logo.svg" alt="Jobb elöl" className="h-12 w-auto" />
+        <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="Jobb elöl" className="h-12 w-auto" />
         <h1 className="text-xl">Színtervező</h1>
         <div className="ml-auto flex gap-2">
           <button type="button" onClick={undo} disabled={!past.length} aria-label="Visszavonás" title="Visszavonás (Cmd+Z)" className="min-h-8 rounded-lg bg-cell px-4 font-mono text-[11px] hover:bg-raised disabled:opacity-40">
