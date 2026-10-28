@@ -18,7 +18,7 @@ export function DayColumn({ dayKey, events, isToday, now, saved, onKind, onSave 
     <section
       data-day={dayKey}
       aria-label={`${month} ${day}., ${weekday}`}
-      className="flex w-[calc(100vw-72px)] shrink-0 snap-start flex-col gap-1 pb-1 sm:w-[45vw] md:w-[30vw] lg:w-64"
+      className="flex w-[calc(100vw-72px)] shrink-0 flex-col gap-1 pb-1 sm:w-[45vw] md:w-[30vw] lg:w-64"
     >
       <header className="sticky top-0 z-20 flex h-10 items-baseline gap-2 bg-frame px-4 pt-2">
         <span className="text-2xl leading-none font-light tracking-tight">{day}</span>
