@@ -43,9 +43,10 @@ export default function App() {
   return (
     <div className="flex h-dvh flex-col">
       <header className="relative z-40 flex items-center gap-2 bg-frame pt-4 pr-4 pb-2 pl-9">
-        <h1 className="shrink-0 sm:mr-4">
+        <h1 className="shrink-0">
           <img src="/logo.svg" alt="Jobb elöl" className="h-16 w-auto" />
         </h1>
+        <p className="ml-2 text-base leading-none text-muted sm:mr-4">budapest egy helyen</p>
         <KindSelect kind={kind} onKind={setKind} className="ml-auto hidden w-48 xl:block" />
         <VenueSelect venue={venue} venues={venues} onVenue={setVenue} className="hidden w-48 xl:block" />
         <div className="ml-auto xl:ml-0">
